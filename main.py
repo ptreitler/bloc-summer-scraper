@@ -161,6 +161,166 @@ def cmd_recommend(args: argparse.Namespace) -> None:
     console.print(f"  Saved: [cyan]{out_path}[/cyan]")
 
 
+def cmd_participants(args: argparse.Namespace) -> None:
+    from analyze import load_data, participant_summary
+
+    try:
+        data = load_data(region=args.region)
+    except FileNotFoundError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
+
+    summary = participant_summary(data)
+    overall = summary["overall"]
+    gym_df = summary["gym_stats"]
+
+    # ---- terminal: overall table ----
+    t_overall = Table(
+        title=f"[bold]{args.region}[/bold] — Participant overview",
+        show_header=True, header_style="bold",
+    )
+    t_overall.add_column("Class")
+    t_overall.add_column("Count", justify="right")
+    t_overall.add_column("Avg score", justify="right")
+    t_overall.add_column("Median score", justify="right")
+    t_overall.add_column("Avg topped", justify="right")
+    t_overall.add_column("Avg completion %", justify="right")
+
+    for _, row in overall.iterrows():
+        style = "bold" if row["class"] == "All" else ""
+        t_overall.add_row(
+            row["class"],
+            str(int(row["count"])),
+            f"{row['avg_score']:.1f}",
+            f"{row['median_score']:.1f}",
+            f"{row['avg_total']:.1f}",
+            f"{row['avg_pct']:.1f}%",
+            style=style,
+        )
+    console.print(t_overall)
+
+    # ---- terminal: per-gym activation table ----
+    gyms = gym_df["gym"].unique()
+    for gym in gyms:
+        g = gym_df[gym_df["gym"] == gym]
+        t_gym = Table(
+            title=f"[bold]{gym}[/bold] — Activation & topped",
+            show_header=True, header_style="bold",
+        )
+        t_gym.add_column("Class")
+        t_gym.add_column("Enrolled", justify="right")
+        t_gym.add_column("Visited", justify="right")
+        t_gym.add_column("Activation %", justify="right")
+        t_gym.add_column("Avg topped", justify="right")
+        t_gym.add_column("Avg topped %", justify="right")
+
+        for _, row in g.iterrows():
+            act = row["activation_pct"]
+            color = "green" if act >= 70 else "yellow" if act >= 40 else "red"
+            style = "bold" if row["class"] == "All" else ""
+            t_gym.add_row(
+                row["class"],
+                str(int(row["enrolled"])),
+                str(int(row["visitors"])),
+                f"[{color}]{act:.1f}%[/{color}]",
+                f"{row['avg_topped']:.1f}",
+                f"{row['avg_topped_pct']:.1f}%",
+                style=style,
+            )
+        console.print(t_gym)
+
+    # ---- HTML output ----
+    region_slug = args.region.lower().replace(" ", "_")
+    out_path = Path("data") / f"participants_{region_slug}.html"
+
+    def pct_style(pct: float) -> str:
+        if pct >= 70:
+            return "color:#2d7a2d;background:#eafaea;font-weight:bold"
+        if pct >= 40:
+            return "color:#8a6000;background:#fffbe6;font-weight:bold"
+        return "color:#a00000;background:#fff0f0;font-weight:bold"
+
+    # overall table rows
+    overall_rows_html = []
+    for _, row in overall.iterrows():
+        bold = " font-weight:bold; background:#f5f5f5;" if row["class"] == "All" else ""
+        overall_rows_html.append(
+            f"<tr style='{bold}'>"
+            f"<td>{row['class']}</td>"
+            f"<td>{int(row['count'])}</td>"
+            f"<td>{row['avg_score']:.1f}</td>"
+            f"<td>{row['median_score']:.1f}</td>"
+            f"<td>{row['avg_total']:.1f}</td>"
+            f"<td>{row['avg_pct']:.1f}%</td>"
+            f"</tr>"
+        )
+
+    # per-gym sections
+    gym_sections_html = []
+    for gym in gyms:
+        g = gym_df[gym_df["gym"] == gym]
+        gym_rows_html = []
+        for _, row in g.iterrows():
+            act = row["activation_pct"]
+            bold_style = " font-weight:bold; background:#f5f5f5;" if row["class"] == "All" else ""
+            gym_rows_html.append(
+                f"<tr style='{bold_style}'>"
+                f"<td>{row['class']}</td>"
+                f"<td>{int(row['enrolled'])}</td>"
+                f"<td>{int(row['visitors'])}</td>"
+                f"<td style='{pct_style(act)}'>{act:.1f}%</td>"
+                f"<td>{row['avg_topped']:.1f}</td>"
+                f"<td>{row['avg_topped_pct']:.1f}%</td>"
+                f"</tr>"
+            )
+        gym_sections_html.append(f"""
+<h2>{gym}</h2>
+<table>
+<thead><tr>
+  <th>Class</th><th>Enrolled</th><th>Visited</th>
+  <th>Activation %</th><th>Avg topped</th><th>Avg topped %</th>
+</tr></thead>
+<tbody>{"".join(gym_rows_html)}</tbody>
+</table>""")
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Participants — {args.region}</title>
+<style>
+  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; }}
+  h1 {{ font-size: 1.3rem; margin-bottom: 0.1rem; }}
+  h2 {{ font-size: 1.05rem; margin: 1.5rem 0 0.4rem; color: #333; }}
+  p.meta {{ color: #777; font-size: 0.85rem; margin-top: 0; }}
+  table {{ border-collapse: collapse; width: 100%; max-width: 780px; margin-bottom: 1rem; }}
+  th, td {{ padding: 0.4rem 0.7rem; text-align: left; border: 1px solid #ddd; }}
+  th {{ background: #f0f0f0; font-weight: 600; }}
+  tr:nth-child(even) td {{ background: #fafafa; }}
+  td:nth-child(n+2) {{ text-align: right; }}
+</style>
+</head>
+<body>
+<h1>Participants — <strong>{args.region}</strong></h1>
+<p class="meta">Scraped: {summary['scraped_at']}</p>
+
+<h2>Overall</h2>
+<table>
+<thead><tr>
+  <th>Class</th><th>Count</th><th>Avg score</th><th>Median score</th>
+  <th>Avg topped</th><th>Avg completion %</th>
+</tr></thead>
+<tbody>{"".join(overall_rows_html)}</tbody>
+</table>
+
+{"".join(gym_sections_html)}
+</body>
+</html>"""
+
+    out_path.write_text(html, encoding="utf-8")
+    console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Bloc Summer Sessions — scraper and stats tool"
@@ -210,6 +370,17 @@ def main() -> None:
     )
     p_rec.add_argument("--name", required=True, help='Competitor name, e.g. "Wurm Lisa"')
     p_rec.set_defaults(func=cmd_recommend)
+
+    # -- participants --
+    p_part = sub.add_parser(
+        "participants",
+        help="Show participant counts, gym activation rates and average scores",
+    )
+    p_part.add_argument(
+        "--region", choices=region_choices, default="Graz",
+        help="Region to show participants for (default: Graz)",
+    )
+    p_part.set_defaults(func=cmd_participants)
 
     args = parser.parse_args()
     args.func(args)

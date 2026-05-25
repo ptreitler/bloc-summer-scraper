@@ -95,6 +95,117 @@ def boulder_completion_stats(data: dict) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Participant summary
+# ---------------------------------------------------------------------------
+
+def participant_summary(data: dict) -> dict:
+    """
+    Return a structured summary of participants for the region.
+
+    Returns a dict with:
+      region       – region name
+      scraped_at   – ISO timestamp string
+      overall      – DataFrame: class | count | avg_score | median_score
+                                | avg_total | avg_pct
+      gym_stats    – DataFrame: gym | class | enrolled | visitors
+                                | activation_pct | avg_topped | avg_topped_pct
+                     (only participants who enrolled in that gym are included)
+    """
+    class_names = [c["name"] for c in data["classes"]]
+    gyms_per_class: dict[str, list[str]] = {}
+    for cls in data["classes"]:
+        gyms_per_class[cls["name"]] = list(cls["competitors"][0]["boulders"].keys()) if cls["competitors"] else []
+
+    all_gyms: list[str] = []
+    for gyms in gyms_per_class.values():
+        for g in gyms:
+            if g not in all_gyms:
+                all_gyms.append(g)
+
+    boulders_per_gym: dict[str, int] = {}
+    for cls in data["classes"]:
+        for comp in cls["competitors"]:
+            for gym, boulders in comp["boulders"].items():
+                boulders_per_gym[gym] = len(boulders)
+
+    # ----- overall stats per class + "All" -----
+    overall_rows = []
+    for cls in data["classes"]:
+        comps = cls["competitors"]
+        if not comps:
+            continue
+        scores = [c["score"] for c in comps]
+        max_boulders = comps[0]["total"]  # enrollment max (e.g. 120 or 160)
+        overall_rows.append({
+            "class": cls["name"],
+            "count": len(comps),
+            "avg_score": round(sum(scores) / len(scores), 1),
+            "median_score": float(pd.Series(scores).median()),
+            "avg_total": round(sum(scores) / len(scores), 1),
+            "avg_pct": round(sum(scores) / len(scores) / max_boulders * 100, 1),
+        })
+    # "All" aggregate
+    all_comps = [c for cls in data["classes"] for c in cls["competitors"]]
+    if all_comps:
+        scores = [c["score"] for c in all_comps]
+        max_boulders = all_comps[0]["total"]
+        overall_rows.append({
+            "class": "All",
+            "count": len(all_comps),
+            "avg_score": round(sum(scores) / len(scores), 1),
+            "median_score": float(pd.Series(scores).median()),
+            "avg_total": round(sum(scores) / len(scores), 1),
+            "avg_pct": round(sum(scores) / len(scores) / max_boulders * 100, 1),
+        })
+    overall_df = pd.DataFrame(overall_rows)
+
+    # ----- per-gym activation + topped stats -----
+    gym_rows = []
+    for gym in all_gyms:
+        n_boulders = boulders_per_gym.get(gym, 0)
+        for cls in data["classes"]:
+            comps = cls["competitors"]
+            if not comps:
+                continue
+            enrolled = len(comps)
+            topped_counts = [sum(c["boulders"].get(gym, [])) for c in comps]
+            visitors = sum(1 for t in topped_counts if t > 0)
+            visited_topped = [t for t in topped_counts if t > 0]
+            gym_rows.append({
+                "gym": gym,
+                "class": cls["name"],
+                "enrolled": enrolled,
+                "visitors": visitors,
+                "activation_pct": round(visitors / enrolled * 100, 1) if enrolled else 0,
+                "avg_topped": round(sum(visited_topped) / len(visited_topped), 1) if visited_topped else 0.0,
+                "avg_topped_pct": round(sum(visited_topped) / len(visited_topped) / n_boulders * 100, 1) if visited_topped and n_boulders else 0.0,
+            })
+        # "All" row for this gym
+        all_enrolled = len(all_comps)
+        topped_counts = [sum(c["boulders"].get(gym, [])) for c in all_comps]
+        visitors = sum(1 for t in topped_counts if t > 0)
+        visited_topped = [t for t in topped_counts if t > 0]
+        gym_rows.append({
+            "gym": gym,
+            "class": "All",
+            "enrolled": all_enrolled,
+            "visitors": visitors,
+            "activation_pct": round(visitors / all_enrolled * 100, 1) if all_enrolled else 0,
+            "avg_topped": round(sum(visited_topped) / len(visited_topped), 1) if visited_topped else 0.0,
+            "avg_topped_pct": round(sum(visited_topped) / len(visited_topped) / n_boulders * 100, 1) if visited_topped and n_boulders else 0.0,
+        })
+
+    gym_df = pd.DataFrame(gym_rows)
+
+    return {
+        "region": data.get("region", ""),
+        "scraped_at": data.get("scraped_at", ""),
+        "overall": overall_df,
+        "gym_stats": gym_df,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Recommendations
 # ---------------------------------------------------------------------------
 
