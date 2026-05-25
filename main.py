@@ -164,7 +164,7 @@ def cmd_recommend(args: argparse.Namespace) -> None:
 
 
 def cmd_participants(args: argparse.Namespace) -> None:
-    from analyze import load_data, participant_summary
+    from analyze import load_data, participant_summary, leaderboard_summary
 
     try:
         data = load_data(region=args.region)
@@ -175,6 +175,12 @@ def cmd_participants(args: argparse.Namespace) -> None:
     summary = participant_summary(data)
     overall = summary["overall"]
     gym_df = summary["gym_stats"]
+
+    lb = leaderboard_summary(data)
+    brackets_df = lb["brackets_df"]
+    visits_df   = lb["visits_df"]
+    diff_df     = lb["diff_df"]
+    max_boulders = lb["max_boulders"]
 
     # ---- terminal: overall table ----
     t_overall = Table(
@@ -244,6 +250,21 @@ def cmd_participants(args: argparse.Namespace) -> None:
             return "color:#8a6000;background:#fffbe6;font-weight:bold"
         return "color:#a00000;background:#fff0f0;font-weight:bold"
 
+    def bracket_style(band: str) -> str:
+        return {
+            "0–25 %":   "color:#a00000;background:#fff0f0",
+            "25–50 %":  "color:#8a6000;background:#fffbe6",
+            "50–75 %":  "color:#1a5c8a;background:#e8f4fb",
+            "75–100 %": "color:#2d7a2d;background:#eafaea",
+        }.get(band, "")
+
+    def difficulty_style(pct: float) -> str:
+        if pct >= 60:
+            return "color:#2d7a2d;background:#eafaea;font-weight:bold"
+        if pct >= 40:
+            return "color:#8a6000;background:#fffbe6;font-weight:bold"
+        return "color:#a00000;background:#fff0f0;font-weight:bold"
+
     # overall table rows
     overall_rows_html = []
     for _, row in overall.iterrows():
@@ -259,7 +280,7 @@ def cmd_participants(args: argparse.Namespace) -> None:
             f"</tr>"
         )
 
-    # per-gym sections
+    # per-gym activation sections
     gym_sections_html = []
     for gym in gyms:
         g = gym_df[gym_df["gym"] == gym]
@@ -278,7 +299,7 @@ def cmd_participants(args: argparse.Namespace) -> None:
                 f"</tr>"
             )
         gym_sections_html.append(f"""
-<h2>{gym}</h2>
+<h3>{gym}</h3>
 <table>
 <thead><tr>
   <th>Class</th><th>Enrolled</th><th>Visited</th>
@@ -287,28 +308,85 @@ def cmd_participants(args: argparse.Namespace) -> None:
 <tbody>{"".join(gym_rows_html)}</tbody>
 </table>""")
 
+    # score distribution sections
+    bracket_sections_html = []
+    for cls_name in brackets_df["class"].unique():
+        rows = brackets_df[brackets_df["class"] == cls_name]
+        tbody = "".join(
+            f"<tr>"
+            f"<td style='{bracket_style(r['bracket'])}'>{r['bracket']}</td>"
+            f"<td>{int(r['count'])}</td>"
+            f"<td>{r['field_pct']:.1f}%</td>"
+            f"</tr>"
+            for _, r in rows.iterrows()
+        )
+        bracket_sections_html.append(f"""
+<h3>{cls_name} <span class="meta">(max {max_boulders} boulders)</span></h3>
+<table>
+<thead><tr><th>Band</th><th>Competitors</th><th>% of field</th></tr></thead>
+<tbody>{tbody}</tbody>
+</table>""")
+
+    # gym visit distribution sections
+    visit_sections_html = []
+    for cls_name in visits_df["class"].unique():
+        rows = visits_df[visits_df["class"] == cls_name]
+        tbody = "".join(
+            f"<tr><td>{int(r['gyms_visited'])}</td><td>{int(r['count'])}</td><td>{r['field_pct']:.1f}%</td></tr>"
+            for _, r in rows.iterrows()
+        )
+        visit_sections_html.append(f"""
+<h3>{cls_name}</h3>
+<table>
+<thead><tr><th>Gyms visited</th><th>Competitors</th><th>% of field</th></tr></thead>
+<tbody>{tbody}</tbody>
+</table>""")
+
+    # gym difficulty sections
+    diff_sections_html = []
+    for cls_name in diff_df["class"].unique():
+        rows = diff_df[diff_df["class"] == cls_name]
+        tbody = "".join(
+            f"<tr>"
+            f"<td style='text-align:left'>{r['gym']}</td>"
+            f"<td>{int(r['visitors'])}</td>"
+            f"<td>{r['avg_topped']:.1f}</td>"
+            f"<td style='{difficulty_style(r['avg_topped_pct'])}'>{r['avg_topped_pct']:.1f}%</td>"
+            f"</tr>"
+            for _, r in rows.iterrows()
+        )
+        diff_sections_html.append(f"""
+<h3>{cls_name}</h3>
+<table>
+<thead><tr>
+  <th style="text-align:left">Gym</th><th>Visitors</th><th>Avg topped</th><th>Avg topped %</th>
+</tr></thead>
+<tbody>{tbody}</tbody>
+</table>""")
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Participants — {args.region}</title>
 <style>
-  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; }}
+  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 860px; }}
   h1 {{ font-size: 1.3rem; margin-bottom: 0.1rem; }}
-  h2 {{ font-size: 1.05rem; margin: 1.5rem 0 0.4rem; color: #333; }}
-  p.meta {{ color: #777; font-size: 0.85rem; margin-top: 0; }}
-  table {{ border-collapse: collapse; width: 100%; max-width: 780px; margin-bottom: 1rem; }}
-  th, td {{ padding: 0.4rem 0.7rem; text-align: left; border: 1px solid #ddd; }}
+  h2 {{ font-size: 1.05rem; margin: 2rem 0 0.3rem; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 0.2rem; }}
+  h3 {{ font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #444; }}
+  p.meta, span.meta {{ color: #777; font-size: 0.85rem; margin-top: 0; }}
+  table {{ border-collapse: collapse; width: 100%; margin-bottom: 0.8rem; }}
+  th, td {{ padding: 0.4rem 0.7rem; text-align: right; border: 1px solid #ddd; }}
   th {{ background: #f0f0f0; font-weight: 600; }}
+  th:first-child, td:first-child {{ text-align: left; }}
   tr:nth-child(even) td {{ background: #fafafa; }}
-  td:nth-child(n+2) {{ text-align: right; }}
 </style>
 </head>
 <body>
 <h1>Participants — <strong>{args.region}</strong></h1>
 <p class="meta">Scraped: {summary['scraped_at']}</p>
 
-<h2>Overall</h2>
+<h2>Overview</h2>
 <table>
 <thead><tr>
   <th>Class</th><th>Count</th><th>Avg score</th><th>Median score</th>
@@ -317,7 +395,17 @@ def cmd_participants(args: argparse.Namespace) -> None:
 <tbody>{"".join(overall_rows_html)}</tbody>
 </table>
 
+<h2>Gym activation</h2>
 {"".join(gym_sections_html)}
+
+<h2>Score distribution</h2>
+{"".join(bracket_sections_html)}
+
+<h2>Gyms visited per competitor</h2>
+{"".join(visit_sections_html)}
+
+<h2>Gym difficulty <span class="meta">(hardest first)</span></h2>
+{"".join(diff_sections_html)}
 </body>
 </html>"""
 
