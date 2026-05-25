@@ -1,5 +1,6 @@
 data/*.json
 data/*.png
+data/recommend
 __pycache__/
 *.pyc
 *.pyo
