@@ -413,6 +413,213 @@ def cmd_participants(args: argparse.Namespace) -> None:
     console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
 
 
+def cmd_score(args: argparse.Namespace) -> None:
+    from analyze import load_data, competitor_score_summary
+
+    try:
+        data = load_data(region=args.region)
+    except FileNotFoundError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
+
+    try:
+        sc = competitor_score_summary(data, args.name)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
+
+    name = sc["name"]
+    cls_name = sc["class_name"]
+    region = args.region
+
+    # ── 1. Overall summary ──────────────────────────────────────────────────
+    summary = Table(title=f"Score card — [bold]{name}[/bold] ({cls_name}, {region})",
+                    show_header=True, header_style="bold")
+    summary.add_column("Rank", justify="right")
+    summary.add_column("Field", justify="right")
+    summary.add_column("Score", justify="right")
+    summary.add_column("Max", justify="right")
+    summary.add_column("%", justify="right")
+    summary.add_row(
+        str(sc["rank"]),
+        str(sc["total_competitors"]),
+        str(sc["score"]),
+        str(sc["comp_total"]),
+        f"{sc['score_pct']:.1f}%",
+    )
+    console.print(summary)
+
+    # ── 2. Per-gym stats ────────────────────────────────────────────────────
+    gym_t = Table(title="Gym breakdown", show_header=True, header_style="bold")
+    gym_t.add_column("Gym", style="bold")
+    gym_t.add_column("Topped", justify="right")
+    gym_t.add_column("Max", justify="right")
+    gym_t.add_column("%", justify="right")
+    gym_t.add_column("Rank", justify="right")
+    for _, row in sc["gym_stats"].iterrows():
+        rank_str = f"{int(row['gym_rank'])}/{int(row['gym_visitors'])}" if row["gym_rank"] is not None else "—"
+        gym_t.add_row(
+            row["gym"],
+            str(int(row["topped"])),
+            str(int(row["n_boulders"])),
+            f"{row['pct']:.1f}%",
+            rank_str,
+        )
+    total_topped = int(sc["gym_stats"]["topped"].sum())
+    total_max = int(sc["gym_stats"]["n_boulders"].sum())
+    total_pct = total_topped / total_max * 100 if total_max else 0.0
+    gym_t.add_section()
+    gym_t.add_row(
+        "[bold]Total[/bold]",
+        f"[bold]{total_topped}[/bold]",
+        f"[bold]{total_max}[/bold]",
+        f"[bold]{total_pct:.1f}%[/bold]",
+        f"[bold]{sc['rank']}/{sc['total_competitors']}[/bold]",
+    )
+    console.print(gym_t)
+
+    # ── 3. Top-5 hardest topped ─────────────────────────────────────────────
+    if not sc["hardest_topped"].empty:
+        hard_t = Table(title="Top 5 hardest boulders topped", show_header=True, header_style="bold")
+        hard_t.add_column("Gym")
+        hard_t.add_column("Boulder", justify="right")
+        hard_t.add_column("Topped by", justify="right")
+        hard_t.add_column("Peers", justify="right")
+        hard_t.add_column("%", justify="right")
+        for _, row in sc["hardest_topped"].iterrows():
+            pct = row["topped_pct"]
+            color = "green" if pct >= 60 else "yellow" if pct >= 30 else "red"
+            hard_t.add_row(
+                row["gym"],
+                str(int(row["boulder"])),
+                str(int(row["topped_count"])),
+                str(int(row["total_peers"])),
+                f"[{color}]{pct:.1f}%[/{color}]",
+            )
+        console.print(hard_t)
+
+    # ── 4. Boulders topped per gym ──────────────────────────────────────────
+    for gym, boulders in sc["topped_per_gym"].items():
+        if boulders:
+            console.print(f"[bold]{gym}[/bold]: {', '.join(str(b) for b in boulders)}")
+        else:
+            console.print(f"[bold]{gym}[/bold]: [dim]none[/dim]")
+
+    # ── HTML output ─────────────────────────────────────────────────────────
+    name_slug = name.lower().replace(" ", "_")
+    region_slug = region.lower().replace(" ", "_")
+    out_dir = Path("data") / "score"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{region_slug}_{name_slug}.html"
+
+    # gym breakdown rows
+    total_topped = int(sc["gym_stats"]["topped"].sum())
+    total_max = int(sc["gym_stats"]["n_boulders"].sum())
+    total_pct = total_topped / total_max * 100 if total_max else 0.0
+    gym_rows_html = []
+    for _, row in sc["gym_stats"].iterrows():
+        rank_str = f"{int(row['gym_rank'])}&thinsp;/&thinsp;{int(row['gym_visitors'])}" if row["gym_rank"] is not None else "—"
+        gym_rows_html.append(
+            f"<tr><td>{row['gym']}</td>"
+            f"<td>{int(row['topped'])}&thinsp;/&thinsp;{int(row['n_boulders'])}</td>"
+            f"<td>{row['pct']:.1f}%</td>"
+            f"<td>{rank_str}</td></tr>"
+        )
+    gym_rows_html.append(
+        f"<tr style='font-weight:bold;border-top:2px solid #bbb'>"
+        f"<td>Total</td>"
+        f"<td>{total_topped}&thinsp;/&thinsp;{total_max}</td>"
+        f"<td>{total_pct:.1f}%</td>"
+        f"<td>{sc['rank']}&thinsp;/&thinsp;{sc['total_competitors']}</td></tr>"
+    )
+
+    # hardest topped rows
+    hard_rows_html = []
+    for _, row in sc["hardest_topped"].iterrows():
+        pct = row["topped_pct"]
+        color = "#2d7a2d" if pct >= 60 else "#8a6000" if pct >= 30 else "#a00000"
+        bg = "#eafaea" if pct >= 60 else "#fffbe6" if pct >= 30 else "#fff0f0"
+        hard_rows_html.append(
+            f"<tr><td>{row['gym']}</td>"
+            f"<td>{int(row['boulder'])}</td>"
+            f"<td>{int(row['topped_count'])}&thinsp;/&thinsp;{int(row['total_peers'])}</td>"
+            f"<td style='color:{color};background:{bg};font-weight:bold'>{pct:.1f}%</td></tr>"
+        )
+
+    # boulder grids per gym
+    grid_sections_html = []
+    for _, gym_row in sc["gym_stats"].iterrows():
+        gym = gym_row["gym"]
+        topped_set = set(sc["topped_per_gym"].get(gym, []))
+        n = int(gym_row["n_boulders"])
+        cells = []
+        for b in range(1, n + 1):
+            if b in topped_set:
+                cells.append(f"<span class='b-topped'>{b}</span>")
+            else:
+                cells.append(f"<span class='b-miss'>{b}</span>")
+        topped_count = int(gym_row["topped"])
+        pct = gym_row["pct"]
+        grid_sections_html.append(
+            f"<h3>{gym} <small>({topped_count}&thinsp;/&thinsp;{n}, {pct:.1f}%)</small></h3>"
+            f"<div class='boulder-grid'>{''.join(cells)}</div>"
+        )
+
+    hardest_section = ""
+    if hard_rows_html:
+        hardest_section = f"""
+<h2>Top 5 hardest boulders topped</h2>
+<table>
+<thead><tr><th>Gym</th><th>Boulder</th><th>Topped&thinsp;/&thinsp;Peers</th><th>Peer %</th></tr></thead>
+<tbody>{"".join(hard_rows_html)}</tbody>
+</table>"""
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Score — {name}</title>
+<style>
+  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 860px; }}
+  h1 {{ font-size: 1.25rem; margin-bottom: 0.1rem; }}
+  p.sub {{ color: #555; font-size: 0.9rem; margin-top: 0; margin-bottom: 1.5rem; }}
+  h2 {{ font-size: 1rem; margin: 1.5rem 0 0.4rem; border-bottom: 1px solid #ddd; padding-bottom: 0.2rem; }}
+  h3 {{ font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #333; }}
+  h3 small {{ font-weight: normal; color: #666; }}
+  table {{ border-collapse: collapse; width: 100%; margin-bottom: 1rem; }}
+  th, td {{ padding: 0.4rem 0.7rem; border: 1px solid #ddd; }}
+  th {{ background: #f0f0f0; font-weight: 600; text-align: left; }}
+  td {{ text-align: right; }}
+  td:first-child {{ text-align: left; }}
+  tr:nth-child(even) td {{ background: #fafafa; }}
+  .boulder-grid {{ display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.5rem; }}
+  .b-topped, .b-miss {{
+    display: inline-block; width: 2rem; text-align: center;
+    padding: 0.2rem 0; border-radius: 4px; font-size: 0.8rem; font-weight: 600;
+  }}
+  .b-topped {{ background: #c6efce; color: #276221; }}
+  .b-miss   {{ background: #f0f0f0; color: #999; }}
+</style>
+</head>
+<body>
+<h1>Score card — <strong>{name}</strong></h1>
+<p class="sub">{cls_name} &nbsp;|&nbsp; {region} &nbsp;|&nbsp; Rank {sc['rank']} of {sc['total_competitors']} &nbsp;|&nbsp; {sc['score']}&thinsp;/&thinsp;{sc['comp_total']} boulders ({sc['score_pct']:.1f}%)</p>
+
+<h2>Gym breakdown</h2>
+<table>
+<thead><tr><th>Gym</th><th>Topped&thinsp;/&thinsp;Max</th><th>%</th><th>Rank</th></tr></thead>
+<tbody>{"".join(gym_rows_html)}</tbody>
+</table>
+{hardest_section}
+<h2>Boulders topped per gym</h2>
+{"".join(grid_sections_html)}
+</body>
+</html>"""
+
+    out_path.write_text(html, encoding="utf-8")
+    console.print(f"  Saved: [cyan]{out_path}[/cyan]")
+
+
 def cmd_find(args: argparse.Namespace) -> None:
     from analyze import load_data
 
@@ -736,6 +943,15 @@ def main() -> None:
         help="Limit leaderboard to top N competitors per class (default: show all)",
     )
     p_lb.set_defaults(func=cmd_leaderboard)
+
+    # -- score --
+    p_score = sub.add_parser("score", help="Score card for a single competitor")
+    p_score.add_argument(
+        "--region", choices=region_choices, default="Graz",
+        help="Region (default: Graz)",
+    )
+    p_score.add_argument("--name", required=True, help="Exact competitor name")
+    p_score.set_defaults(func=cmd_score)
 
     # -- find --
     p_find = sub.add_parser("find", help="Search competitors by name substring")

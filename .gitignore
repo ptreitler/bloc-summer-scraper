@@ -3,6 +3,7 @@ data/*.png
 data/recommend/
 data/participants/
 data/leaderboard/
+data/score/
 __pycache__/
 *.pyc
 *.pyo

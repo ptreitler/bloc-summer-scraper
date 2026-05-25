@@ -390,6 +390,132 @@ def competitor_recommendations(data: dict, name: str) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Score summary
+# ---------------------------------------------------------------------------
+
+def competitor_score_summary(data: dict, name: str) -> dict:
+    """
+    Return a score card for the named competitor.
+
+    Keys:
+      name, class_name, rank, total_competitors,
+      score, comp_total, score_pct,
+      gym_stats   – DataFrame: gym | topped | n_boulders | pct | gym_rank | gym_visitors
+      hardest_topped – DataFrame (top 5): gym | boulder | topped_count | total_peers | topped_pct
+      topped_per_gym – dict {gym: [boulder_numbers 1-based]}
+    """
+    name_lower = name.lower()
+    comp_data = None
+    comp_class = None
+    for cls in data["classes"]:
+        for comp in cls["competitors"]:
+            if comp["name"].lower() == name_lower:
+                comp_data = comp
+                comp_class = cls
+                break
+        if comp_data:
+            break
+
+    if comp_data is None:
+        raise ValueError(
+            f"Competitor '{name}' not found. "
+            "Check spelling or use `find` to search."
+        )
+
+    cls_name = comp_class["name"]
+    all_comps = comp_class["competitors"]
+    total_competitors = len(all_comps)
+    all_gyms = list(comp_data["boulders"].keys())
+
+    score = comp_data["score"]
+    comp_total = comp_data["total"]
+    score_pct = round(score / comp_total * 100, 1) if comp_total else 0.0
+
+    # --- per-gym stats + gym rank ---
+    gym_stat_rows = []
+    topped_per_gym: dict[str, list[int]] = {}
+    for gym in all_gyms:
+        boulders = comp_data["boulders"].get(gym, [])
+        n_boulders = len(boulders)
+        topped = sum(boulders)
+        pct = round(topped / n_boulders * 100, 1) if n_boulders else 0.0
+        topped_per_gym[gym] = [i + 1 for i, t in enumerate(boulders) if t]
+
+        # rank among visitors to this gym (topped > 0 there)
+        gym_scores = [(sum(c["boulders"].get(gym, [])), c["id"]) for c in all_comps]
+        visitors = sorted([(t, cid) for t, cid in gym_scores if t > 0], key=lambda x: -x[0])
+        gym_visitors = len(visitors)
+        if topped > 0:
+            gym_rank = next(
+                (i + 1 for i, (t, cid) in enumerate(visitors) if cid == comp_data["id"]),
+                None,
+            )
+        else:
+            gym_rank = None  # did not visit
+
+        gym_stat_rows.append({
+            "gym": gym,
+            "topped": topped,
+            "n_boulders": n_boulders,
+            "pct": pct,
+            "gym_rank": gym_rank,
+            "gym_visitors": gym_visitors,
+        })
+    gym_stats_df = pd.DataFrame(gym_stat_rows)
+
+    # --- peer stats for hardest-topped computation (visitor-filtered) ---
+    peer_rows = []
+    for comp in all_comps:
+        for gym, boulders in comp["boulders"].items():
+            for idx, t in enumerate(boulders):
+                peer_rows.append({
+                    "competitor_id": comp["id"],
+                    "gym": gym,
+                    "boulder": idx + 1,
+                    "topped": int(t),
+                })
+    peer_df = pd.DataFrame(peer_rows)
+    gym_totals = peer_df.groupby(["competitor_id", "gym"])["topped"].transform("sum")
+    peer_df = peer_df[gym_totals > 0]
+    peer_stats = (
+        peer_df.groupby(["gym", "boulder"])
+        .agg(topped_count=("topped", "sum"), total_peers=("topped", "count"))
+        .reset_index()
+    )
+    peer_stats["topped_pct"] = (
+        peer_stats["topped_count"] / peer_stats["total_peers"] * 100
+    ).round(1)
+
+    # top-5 hardest boulders this competitor topped
+    my_topped = [
+        {"gym": gym, "boulder": idx + 1}
+        for gym, boulders in comp_data["boulders"].items()
+        for idx, t in enumerate(boulders)
+        if t
+    ]
+    if my_topped:
+        my_df = pd.DataFrame(my_topped).merge(peer_stats, on=["gym", "boulder"])
+        hardest_df = my_df.sort_values("topped_pct").head(5).reset_index(drop=True)
+    else:
+        hardest_df = pd.DataFrame(
+            columns=["gym", "boulder", "topped_count", "total_peers", "topped_pct"]
+        )
+
+    return {
+        "name": comp_data["name"],
+        "class_name": cls_name,
+        "rank": comp_data["rank"],
+        "total_competitors": total_competitors,
+        "score": score,
+        "comp_total": comp_total,
+        "score_pct": score_pct,
+        "gym_stats": gym_stats_df,
+        "hardest_topped": hardest_df,
+        "topped_per_gym": topped_per_gym,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Rich table output
 # ---------------------------------------------------------------------------
 
