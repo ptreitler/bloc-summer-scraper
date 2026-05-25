@@ -422,7 +422,7 @@ def cmd_leaderboard(args: argparse.Namespace) -> None:
         console.print(f"[red]{e}[/red]")
         sys.exit(1)
 
-    top_n = args.top
+    top_n = args.limit
     lb = leaderboard_summary(data, top_n=top_n)
     top_df = lb["top_df"]
     brackets_df = lb["brackets_df"]
@@ -434,7 +434,7 @@ def cmd_leaderboard(args: argparse.Namespace) -> None:
     for cls_name in top_df["class"].unique():
         rows = top_df[top_df["class"] == cls_name]
         t = Table(
-            title=f"Top {top_n} — [bold]{cls_name}[/bold] ({args.region})",
+            title=f"{'Top ' + str(top_n) + ' — ' if top_n else ''}{cls_name} — [bold]{args.region}[/bold]",
             show_header=True, header_style="bold",
         )
         t.add_column("#", justify="right", style="dim")
@@ -536,8 +536,9 @@ def cmd_leaderboard(args: argparse.Namespace) -> None:
             f"</tr>"
             for _, r in rows.iterrows()
         )
+        heading = f"Top {top_n} — {cls_name}" if top_n else f"Leaderboard — {cls_name}"
         sections.append(f"""
-<h2>Top {top_n} — {cls_name}</h2>
+<h2>{heading}</h2>
 <table>
 <thead><tr><th>#</th><th style="text-align:left">Name</th><th>Score</th><th>% of max</th></tr></thead>
 <tbody>{tbody}</tbody>
@@ -701,8 +702,8 @@ def main() -> None:
         help="Region (default: Graz)",
     )
     p_lb.add_argument(
-        "--top", type=int, default=10, metavar="N",
-        help="Number of top competitors to show per class (default: 10)",
+        "--limit", type=int, default=None, metavar="N",
+        help="Limit leaderboard to top N competitors per class (default: show all)",
     )
     p_lb.set_defaults(func=cmd_leaderboard)
 

@@ -209,11 +209,11 @@ def participant_summary(data: dict) -> dict:
 # Leaderboard summary
 # ---------------------------------------------------------------------------
 
-def leaderboard_summary(data: dict, top_n: int = 10) -> dict:
+def leaderboard_summary(data: dict, top_n: int | None = None) -> dict:
     """
     Return four DataFrames for the leaderboard command:
 
-    top_df        – top_n competitors per class (not "All"), ranked by score
+    top_df        – all (or top_n) competitors per class (not "All"), ranked by score
     brackets_df   – score distribution in four fixed bands (% of max possible)
     visits_df     – how many competitors visited exactly N gyms, per class
     diff_df       – gym difficulty ranking (avg topped % among visitors),
