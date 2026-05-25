@@ -1248,7 +1248,7 @@ def main() -> None:
         "--region", choices=region_choices, default="Graz",
         help="Region the competitor is registered in (default: Graz)",
     )
-    p_rec.add_argument("--name", required=True, help='Competitor name, e.g. "Wurm Lisa"')
+    p_rec.add_argument("--name", required=True, help='Competitor name, e.g. "Müller Lisa"')
     p_rec.set_defaults(func=cmd_recommend)
 
     # -- participants --

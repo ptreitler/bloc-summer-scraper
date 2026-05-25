@@ -132,8 +132,8 @@ python main.py find --region Wien "anna"
 Full breakdown for a single competitor: ranking, gym-by-gym performance, the 5 hardest boulders they topped, and a visual boulder grid per gym.
 
 ```bash
-python main.py score --name "Wurm Lisa"
-python main.py score --region Wien --name "Jesus Paulo"
+python main.py score --name "Musterfrau Maria"
+python main.py score --region Wien --name "Mustermann Max"
 ```
 
 **Console sections:**
@@ -155,8 +155,8 @@ Output: `data/score/<region>_<name>.html`
 Shows which boulders a competitor hasn't topped yet, sorted by peers' completion rate — highest first (most reachable).
 
 ```bash
-python main.py recommend --name "Wurm Lisa"
-python main.py recommend --region Wien --name "Jesus Paulo"
+python main.py recommend --name "Musterfrau Maria"
+python main.py recommend --region Wien --name "Mustermann Max"
 ```
 
 | Colour | Peer completion % |
@@ -174,8 +174,8 @@ Output: terminal table + `data/recommend/<region>_<name>.html`
 Compares two competitors in the same class and region.
 
 ```bash
-python main.py compare "Wurm Lisa" "Muster Maria"
-python main.py compare --region Wien "Jesus Paulo" "Smith John"
+python main.py compare "Musterfrau Maria" "Mustermann Max"
+python main.py compare --region Wien "Mustermann Max" "Doe John"
 ```
 
 **Output sections:**
@@ -233,11 +233,11 @@ data/
   leaderboard/
     graz.html                         # leaderboard report
   score/
-    graz_wurm_lisa.html               # score card
+    graz_mustermann_max.html               # score card
   recommend/
-    graz_wurm_lisa.html               # recommendation report
+    graz_mustermann_max.html               # recommendation report
   compare/
-    graz_wurm_lisa_vs_muster_maria.html
+    graz_mustermann_max_vs_musterfrau_maria.html
 ```
 
 JSON scrape files and all HTML output directories are gitignored. `data/tags.json` is tracked. The `data/` directory itself is tracked via `.gitkeep`.
