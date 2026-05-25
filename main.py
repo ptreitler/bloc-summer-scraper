@@ -413,6 +413,36 @@ def cmd_participants(args: argparse.Namespace) -> None:
     console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
 
 
+def cmd_find(args: argparse.Namespace) -> None:
+    from analyze import load_data
+
+    data = load_data(region=args.region)
+    query = args.query.lower()
+
+    hits: list[tuple[str, int, str, int, int]] = []  # class, rank, name, score, total
+    for cls in data["classes"]:
+        cls_name = cls["name"]
+        for c in cls["competitors"]:
+            if query in c["name"].lower():
+                hits.append((cls_name, c["rank"], c["name"], c["score"], c["total"]))
+
+    if not hits:
+        console.print(f"[yellow]No competitors found matching '{args.query}'[/yellow]")
+        return
+
+    t = Table(title=f"Search: '{args.query}' — {args.region}", show_lines=False)
+    t.add_column("Class", style="dim")
+    t.add_column("Rank", justify="right")
+    t.add_column("Name", style="bold")
+    t.add_column("Score", justify="right")
+    t.add_column("Max", justify="right")
+    t.add_column("%", justify="right")
+    for cls_name, rank, name, score, total in sorted(hits, key=lambda x: (x[0], x[1])):
+        pct = score / total * 100 if total else 0.0
+        t.add_row(cls_name, str(rank), name, str(score), str(total), f"{pct:.1f}%")
+    console.print(t)
+
+
 def cmd_leaderboard(args: argparse.Namespace) -> None:
     from analyze import load_data, leaderboard_summary
 
@@ -706,6 +736,15 @@ def main() -> None:
         help="Limit leaderboard to top N competitors per class (default: show all)",
     )
     p_lb.set_defaults(func=cmd_leaderboard)
+
+    # -- find --
+    p_find = sub.add_parser("find", help="Search competitors by name substring")
+    p_find.add_argument(
+        "--region", choices=region_choices, default="Graz",
+        help="Region (default: Graz)",
+    )
+    p_find.add_argument("query", help="Substring to search for in competitor names")
+    p_find.set_defaults(func=cmd_find)
 
     args = parser.parse_args()
     args.func(args)
