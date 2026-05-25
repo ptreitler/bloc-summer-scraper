@@ -620,6 +620,221 @@ def cmd_score(args: argparse.Namespace) -> None:
     console.print(f"  Saved: [cyan]{out_path}[/cyan]")
 
 
+def cmd_compare(args: argparse.Namespace) -> None:
+    from analyze import load_data, competitor_compare_summary
+
+    try:
+        data = load_data(region=args.region)
+    except FileNotFoundError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
+
+    try:
+        cmp = competitor_compare_summary(data, args.name_a, args.name_b)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
+
+    na, nb = cmp["name_a"], cmp["name_b"]
+    region = args.region
+    total = cmp["comp_total"]
+    n_competitors = cmp["total_competitors"]
+
+    def pct_color(pct: float) -> str:
+        return "green" if pct >= 60 else "yellow" if pct >= 30 else "red"
+
+    # ── 1. Overall comparison ────────────────────────────────────────────────
+    ov = Table(
+        title=f"[bold]{na}[/bold] vs [bold]{nb}[/bold] — {cmp['class_name']}, {region}",
+        show_header=True, header_style="bold",
+    )
+    ov.add_column("", style="dim")
+    ov.add_column(na, justify="right")
+    ov.add_column(nb, justify="right")
+    sa, sb = cmp["score_a"], cmp["score_b"]
+    pct_a = sa / total * 100 if total else 0.0
+    pct_b = sb / total * 100 if total else 0.0
+    ov.add_row("Rank", f"{cmp['rank_a']} / {n_competitors}", f"{cmp['rank_b']} / {n_competitors}")
+    ov.add_row("Score", str(sa), str(sb))
+    ov.add_row("Max", str(total), str(total))
+    ov.add_row("%", f"{pct_a:.1f}%", f"{pct_b:.1f}%")
+    console.print(ov)
+
+    # ── 2. Per-gym comparison ────────────────────────────────────────────────
+    gym_t = Table(title="Gym breakdown", show_header=True, header_style="bold")
+    gym_t.add_column("Gym", style="bold")
+    gym_t.add_column(f"{na} topped", justify="right")
+    gym_t.add_column(f"{na} %", justify="right")
+    gym_t.add_column(f"{nb} topped", justify="right")
+    gym_t.add_column(f"{nb} %", justify="right")
+    for _, row in cmp["gym_cmp"].iterrows():
+        n = int(row["n_boulders"])
+        gym_t.add_row(
+            row["gym"],
+            f"{int(row['topped_a'])} / {n}",
+            f"{row['pct_a']:.1f}%",
+            f"{int(row['topped_b'])} / {n}",
+            f"{row['pct_b']:.1f}%",
+        )
+    total_a = int(cmp["gym_cmp"]["topped_a"].sum())
+    total_b = int(cmp["gym_cmp"]["topped_b"].sum())
+    total_n = int(cmp["gym_cmp"]["n_boulders"].sum())
+    tpct_a = total_a / total_n * 100 if total_n else 0.0
+    tpct_b = total_b / total_n * 100 if total_n else 0.0
+    gym_t.add_section()
+    gym_t.add_row(
+        "[bold]Total[/bold]",
+        f"[bold]{total_a} / {total_n}[/bold]",
+        f"[bold]{tpct_a:.1f}%[/bold]",
+        f"[bold]{total_b} / {total_n}[/bold]",
+        f"[bold]{tpct_b:.1f}%[/bold]",
+    )
+    console.print(gym_t)
+
+    # ── 3 & 4. Exclusive boulders ────────────────────────────────────────────
+    def _print_exclusive(df, owner: str, other: str) -> None:
+        if df.empty:
+            console.print(f"[dim]{owner} has no boulders that {other} hasn't also topped.[/dim]")
+            return
+        t = Table(
+            title=f"Topped by [bold]{owner}[/bold], not by [bold]{other}[/bold]",
+            show_header=True, header_style="bold",
+        )
+        t.add_column("Gym")
+        t.add_column("Boulder", justify="right")
+        t.add_column("Topped by peers", justify="right")
+        t.add_column("Total peers", justify="right")
+        t.add_column("Peer %", justify="right")
+        for _, row in df.iterrows():
+            pct = row["topped_pct"]
+            color = pct_color(pct)
+            t.add_row(
+                row["gym"],
+                str(int(row["boulder"])),
+                str(int(row["topped_count"])),
+                str(int(row["total_peers"])),
+                f"[{color}]{pct:.1f}%[/{color}]",
+            )
+        console.print(t)
+
+    _print_exclusive(cmp["only_a"], na, nb)
+    _print_exclusive(cmp["only_b"], nb, na)
+
+    # ── HTML output ──────────────────────────────────────────────────────────
+    slug_a = na.lower().replace(" ", "_")
+    slug_b = nb.lower().replace(" ", "_")
+    region_slug = region.lower().replace(" ", "_")
+    out_dir = Path("data") / "compare"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{region_slug}_{slug_a}_vs_{slug_b}.html"
+
+    def _pct_style(pct: float) -> str:
+        if pct >= 60:
+            return "color:#2d7a2d;background:#eafaea"
+        if pct >= 30:
+            return "color:#8a6000;background:#fffbe6"
+        return "color:#a00000;background:#fff0f0"
+
+    # overall rows
+    winner_score = "a" if sa > sb else ("b" if sb > sa else "")
+    hl_a = " style='font-weight:bold'" if winner_score == "a" else ""
+    hl_b = " style='font-weight:bold'" if winner_score == "b" else ""
+    overall_html = f"""
+<table>
+<thead><tr><th></th><th>{na}</th><th>{nb}</th></tr></thead>
+<tbody>
+<tr><td>Rank</td><td{hl_a}>{cmp['rank_a']} / {n_competitors}</td><td{hl_b}>{cmp['rank_b']} / {n_competitors}</td></tr>
+<tr><td>Score</td><td{hl_a}>{sa} / {total}</td><td{hl_b}>{sb} / {total}</td></tr>
+<tr><td>%</td><td{hl_a}>{pct_a:.1f}%</td><td{hl_b}>{pct_b:.1f}%</td></tr>
+</tbody>
+</table>"""
+
+    # gym rows
+    gym_html_rows = []
+    for _, row in cmp["gym_cmp"].iterrows():
+        n = int(row["n_boulders"])
+        win = "a" if row["topped_a"] > row["topped_b"] else ("b" if row["topped_b"] > row["topped_a"] else "")
+        hla = " style='font-weight:bold'" if win == "a" else ""
+        hlb = " style='font-weight:bold'" if win == "b" else ""
+        gym_html_rows.append(
+            f"<tr><td>{row['gym']}</td>"
+            f"<td{hla}>{int(row['topped_a'])}&thinsp;/&thinsp;{n} ({row['pct_a']:.1f}%)</td>"
+            f"<td{hlb}>{int(row['topped_b'])}&thinsp;/&thinsp;{n} ({row['pct_b']:.1f}%)</td></tr>"
+        )
+    win_total = "a" if total_a > total_b else ("b" if total_b > total_a else "")
+    hla = " style='font-weight:bold'" if win_total == "a" else ""
+    hlb = " style='font-weight:bold'" if win_total == "b" else ""
+    gym_html_rows.append(
+        f"<tr style='border-top:2px solid #bbb'>"
+        f"<td><strong>Total</strong></td>"
+        f"<td{hla}><strong>{total_a}&thinsp;/&thinsp;{total_n} ({tpct_a:.1f}%)</strong></td>"
+        f"<td{hlb}><strong>{total_b}&thinsp;/&thinsp;{total_n} ({tpct_b:.1f}%)</strong></td></tr>"
+    )
+
+    def _exclusive_html(df, owner: str, other: str) -> str:
+        if df.empty:
+            return f"<p class='none'>{owner} has no boulders that {other} hasn't also topped.</p>"
+        rows = []
+        for _, row in df.iterrows():
+            pct = row["topped_pct"]
+            style = _pct_style(pct)
+            rows.append(
+                f"<tr><td>{row['gym']}</td>"
+                f"<td>{int(row['boulder'])}</td>"
+                f"<td>{int(row['topped_count'])}&thinsp;/&thinsp;{int(row['total_peers'])}</td>"
+                f"<td style='{style};font-weight:bold'>{pct:.1f}%</td></tr>"
+            )
+        return (
+            f"<table>"
+            f"<thead><tr><th>Gym</th><th>Boulder</th><th>Peers topped</th><th>Peer %</th></tr></thead>"
+            f"<tbody>{''.join(rows)}</tbody>"
+            f"</table>"
+        )
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Compare — {na} vs {nb}</title>
+<style>
+  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 900px; }}
+  h1 {{ font-size: 1.2rem; margin-bottom: 0.1rem; }}
+  p.sub {{ color: #555; font-size: 0.9rem; margin-top: 0; margin-bottom: 1.5rem; }}
+  h2 {{ font-size: 1rem; margin: 1.5rem 0 0.4rem; border-bottom: 1px solid #ddd; padding-bottom: 0.2rem; }}
+  table {{ border-collapse: collapse; width: 100%; margin-bottom: 0.5rem; }}
+  th, td {{ padding: 0.4rem 0.7rem; border: 1px solid #ddd; }}
+  th {{ background: #f0f0f0; font-weight: 600; text-align: left; }}
+  td {{ text-align: right; }}
+  td:first-child {{ text-align: left; }}
+  tr:nth-child(even) td {{ background: #fafafa; }}
+  p.none {{ color: #888; font-style: italic; font-size: 0.9rem; }}
+</style>
+</head>
+<body>
+<h1>Compare — <strong>{na}</strong> vs <strong>{nb}</strong></h1>
+<p class="sub">{cmp['class_name']} &nbsp;|&nbsp; {region}</p>
+
+<h2>Overall</h2>
+{overall_html}
+
+<h2>Gym breakdown</h2>
+<table>
+<thead><tr><th>Gym</th><th>{na}</th><th>{nb}</th></tr></thead>
+<tbody>{"".join(gym_html_rows)}</tbody>
+</table>
+
+<h2>Topped by {na}, not by {nb}</h2>
+{_exclusive_html(cmp['only_a'], na, nb)}
+
+<h2>Topped by {nb}, not by {na}</h2>
+{_exclusive_html(cmp['only_b'], nb, na)}
+</body>
+</html>"""
+
+    out_path.write_text(html, encoding="utf-8")
+    console.print(f"  Saved: [cyan]{out_path}[/cyan]")
+
+
 def cmd_find(args: argparse.Namespace) -> None:
     from analyze import load_data
 
@@ -952,6 +1167,15 @@ def main() -> None:
     )
     p_score.add_argument("--name", required=True, help="Exact competitor name")
     p_score.set_defaults(func=cmd_score)
+
+    # -- compare --
+    p_cmp = sub.add_parser("compare", help="Head-to-head comparison of two competitors")
+    p_cmp.add_argument("--region", choices=region_choices, default="Graz",
+        help="Region (default: Graz)",
+    )
+    p_cmp.add_argument("name_a", help="First competitor name")
+    p_cmp.add_argument("name_b", help="Second competitor name")
+    p_cmp.set_defaults(func=cmd_compare)
 
     # -- find --
     p_find = sub.add_parser("find", help="Search competitors by name substring")

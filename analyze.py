@@ -516,6 +516,123 @@ def competitor_score_summary(data: dict, name: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Compare two competitors
+# ---------------------------------------------------------------------------
+
+def competitor_compare_summary(data: dict, name_a: str, name_b: str) -> dict:
+    """
+    Return a comparison between two competitors (must be in the same class).
+
+    Keys:
+      name_a, name_b, class_name,
+      gym_cmp   – DataFrame: gym | topped_a | topped_b | n_boulders | pct_a | pct_b
+      only_a    – DataFrame: boulders A topped but B did not
+                  columns: gym | boulder | topped_count | total_peers | topped_pct
+      only_b    – DataFrame: boulders B topped but A did not (same columns)
+    """
+    def _find(name: str):
+        nl = name.lower()
+        for cls in data["classes"]:
+            for comp in cls["competitors"]:
+                if comp["name"].lower() == nl:
+                    return comp, cls
+        return None, None
+
+    comp_a, cls_a = _find(name_a)
+    comp_b, cls_b = _find(name_b)
+
+    if comp_a is None:
+        raise ValueError(f"Competitor '{name_a}' not found.")
+    if comp_b is None:
+        raise ValueError(f"Competitor '{name_b}' not found.")
+    if cls_a["name"] != cls_b["name"]:
+        raise ValueError(
+            f"Competitors are in different classes "
+            f"({cls_a['name']} vs {cls_b['name']})."
+        )
+
+    cls_name = cls_a["name"]
+    all_comps = cls_a["competitors"]
+    all_gyms = list(comp_a["boulders"].keys())
+
+    # --- per-gym score comparison ---
+    gym_rows = []
+    for gym in all_gyms:
+        n = len(comp_a["boulders"].get(gym, []))
+        ta = sum(comp_a["boulders"].get(gym, []))
+        tb = sum(comp_b["boulders"].get(gym, []))
+        gym_rows.append({
+            "gym": gym,
+            "topped_a": ta,
+            "topped_b": tb,
+            "n_boulders": n,
+            "pct_a": round(ta / n * 100, 1) if n else 0.0,
+            "pct_b": round(tb / n * 100, 1) if n else 0.0,
+        })
+    gym_cmp_df = pd.DataFrame(gym_rows)
+
+    # --- peer stats (visitor-filtered, same class) ---
+    peer_rows = []
+    for comp in all_comps:
+        for gym, boulders in comp["boulders"].items():
+            for idx, t in enumerate(boulders):
+                peer_rows.append({
+                    "competitor_id": comp["id"],
+                    "gym": gym,
+                    "boulder": idx + 1,
+                    "topped": int(t),
+                })
+    peer_df = pd.DataFrame(peer_rows)
+    gym_totals = peer_df.groupby(["competitor_id", "gym"])["topped"].transform("sum")
+    peer_df = peer_df[gym_totals > 0]
+    peer_stats = (
+        peer_df.groupby(["gym", "boulder"])
+        .agg(topped_count=("topped", "sum"), total_peers=("topped", "count"))
+        .reset_index()
+    )
+    peer_stats["topped_pct"] = (
+        peer_stats["topped_count"] / peer_stats["total_peers"] * 100
+    ).round(1)
+
+    # --- exclusive boulders ---
+    def _exclusive(have: dict, lack: dict) -> pd.DataFrame:
+        excl = [
+            {"gym": gym, "boulder": idx + 1}
+            for gym, boulders in have["boulders"].items()
+            for idx, t in enumerate(boulders)
+            if t and not lack["boulders"].get(gym, [])[idx]
+        ]
+        if not excl:
+            return pd.DataFrame(
+                columns=["gym", "boulder", "topped_count", "total_peers", "topped_pct"]
+            )
+        return (
+            pd.DataFrame(excl)
+            .merge(peer_stats, on=["gym", "boulder"])
+            .sort_values(["gym", "boulder"])
+            .reset_index(drop=True)
+        )
+
+    only_a = _exclusive(comp_a, comp_b)
+    only_b = _exclusive(comp_b, comp_a)
+
+    return {
+        "name_a": comp_a["name"],
+        "name_b": comp_b["name"],
+        "class_name": cls_name,
+        "score_a": comp_a["score"],
+        "score_b": comp_b["score"],
+        "rank_a": comp_a["rank"],
+        "rank_b": comp_b["rank"],
+        "comp_total": comp_a["total"],
+        "total_competitors": len(all_comps),
+        "gym_cmp": gym_cmp_df,
+        "only_a": only_a,
+        "only_b": only_b,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Rich table output
 # ---------------------------------------------------------------------------
 

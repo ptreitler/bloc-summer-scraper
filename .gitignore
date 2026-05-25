@@ -4,6 +4,7 @@ data/recommend/
 data/participants/
 data/leaderboard/
 data/score/
+data/compare/
 __pycache__/
 *.pyc
 *.pyo
