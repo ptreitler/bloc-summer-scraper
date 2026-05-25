@@ -67,6 +67,11 @@ def boulder_completion_stats(data: dict) -> pd.DataFrame:
 
     df = pd.DataFrame(rows)
 
+    # Exclude competitors who never topped any boulder at a given gym
+    # (i.e. they never visited — all zeros). They shouldn't inflate the denominator.
+    gym_totals = df.groupby(["competitor_id", "gym"])["topped"].transform("sum")
+    df = df[gym_totals > 0]
+
     per_class = (
         df.groupby(["gym", "boulder", "class"])
         .agg(topped_count=("topped", "sum"), total=("topped", "count"))
@@ -118,15 +123,17 @@ def competitor_recommendations(data: dict, name: str) -> pd.DataFrame:
             "Check spelling or run `python main.py stats` to list names."
         )
 
-    # Build completion stats for the same class
+    # Build completion stats for the same class (excluding non-visitors)
     peers = next(c for c in data["classes"] if c["name"] == comp_class_name)
     rows = []
     for comp in peers["competitors"]:
         for gym, boulders in comp["boulders"].items():
             for idx, topped in enumerate(boulders):
-                rows.append({"gym": gym, "boulder": idx + 1, "topped": int(topped)})
+                rows.append({"competitor_id": comp["id"], "gym": gym, "boulder": idx + 1, "topped": int(topped)})
 
     peer_df = pd.DataFrame(rows)
+    gym_totals = peer_df.groupby(["competitor_id", "gym"])["topped"].transform("sum")
+    peer_df = peer_df[gym_totals > 0]
     peer_stats = (
         peer_df.groupby(["gym", "boulder"])
         .agg(topped_count=("topped", "sum"), total=("topped", "count"))
