@@ -206,6 +206,125 @@ def participant_summary(data: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Leaderboard summary
+# ---------------------------------------------------------------------------
+
+def leaderboard_summary(data: dict, top_n: int = 10) -> dict:
+    """
+    Return four DataFrames for the leaderboard command:
+
+    top_df        – top_n competitors per class (not "All"), ranked by score
+    brackets_df   – score distribution in four fixed bands (% of max possible)
+    visits_df     – how many competitors visited exactly N gyms, per class
+    diff_df       – gym difficulty ranking (avg topped % among visitors),
+                    sorted hardest-first, per class
+    """
+    all_gyms: list[str] = []
+    boulders_per_gym: dict[str, int] = {}
+    for cls in data["classes"]:
+        for comp in cls["competitors"]:
+            for gym, boulders in comp["boulders"].items():
+                boulders_per_gym[gym] = len(boulders)
+                if gym not in all_gyms:
+                    all_gyms.append(gym)
+
+    max_boulders = sum(boulders_per_gym.values())
+
+    named_classes = {cls["name"]: cls["competitors"] for cls in data["classes"]}
+    all_comps = [c for cls in data["classes"] for c in cls["competitors"]]
+    all_classes = dict(**named_classes, All=all_comps)
+
+    # 1. Top-N leaderboard (per named class only — All is not meaningful here)
+    top_rows = []
+    for cls_name, comps in named_classes.items():
+        sorted_comps = sorted(comps, key=lambda c: (-c["score"], c["name"]))
+        for pos, comp in enumerate(sorted_comps[:top_n], start=1):
+            top_rows.append({
+                "class": cls_name,
+                "position": pos,
+                "name": comp["name"],
+                "score": comp["score"],
+                "score_pct": round(comp["score"] / max_boulders * 100, 1),
+            })
+    top_df = pd.DataFrame(top_rows)
+
+    # 2. Score brackets — fixed bands as % of max possible score
+    band_edges = [(0, 25, "0–25 %"), (25, 50, "25–50 %"), (50, 75, "50–75 %"), (75, 101, "75–100 %")]
+    bracket_rows = []
+    for cls_name, comps in all_classes.items():
+        if not comps:
+            continue
+        n = len(comps)
+        for lo, hi, label in band_edges:
+            count = sum(
+                1 for c in comps
+                if lo <= c["score"] / max_boulders * 100 < hi
+            )
+            bracket_rows.append({
+                "class": cls_name,
+                "bracket": label,
+                "count": count,
+                "field_pct": round(count / n * 100, 1),
+            })
+    brackets_df = pd.DataFrame(bracket_rows)
+
+    # 3. Gym visit distribution — how many gyms did each competitor visit?
+    visit_rows = []
+    for cls_name, comps in all_classes.items():
+        if not comps:
+            continue
+        n = len(comps)
+        visit_counts = [
+            sum(1 for boulders in c["boulders"].values() if sum(boulders) > 0)
+            for c in comps
+        ]
+        for n_gyms in range(len(all_gyms) + 1):
+            count = sum(1 for v in visit_counts if v == n_gyms)
+            if count > 0 or n_gyms == 0:
+                visit_rows.append({
+                    "class": cls_name,
+                    "gyms_visited": n_gyms,
+                    "count": count,
+                    "field_pct": round(count / n * 100, 1),
+                })
+    visits_df = pd.DataFrame(visit_rows)
+
+    # 4. Gym difficulty ranking — avg topped % among visitors, hardest first
+    diff_rows = []
+    for gym in all_gyms:
+        n_boulders = boulders_per_gym[gym]
+        for cls_name, comps in all_classes.items():
+            if not comps:
+                continue
+            topped_counts = [sum(c["boulders"].get(gym, [])) for c in comps]
+            visited = [t for t in topped_counts if t > 0]
+            if visited:
+                diff_rows.append({
+                    "class": cls_name,
+                    "gym": gym,
+                    "visitors": len(visited),
+                    "avg_topped": round(sum(visited) / len(visited), 1),
+                    "avg_topped_pct": round(sum(visited) / len(visited) / n_boulders * 100, 1),
+                })
+    diff_df = (
+        pd.DataFrame(diff_rows)
+        .sort_values(["class", "avg_topped_pct"])
+        .reset_index(drop=True)
+    )
+
+    return {
+        "region": data.get("region", ""),
+        "scraped_at": data.get("scraped_at", ""),
+        "max_boulders": max_boulders,
+        "top_n": top_n,
+        "top_df": top_df,
+        "brackets_df": brackets_df,
+        "visits_df": visits_df,
+        "diff_df": diff_df,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Recommendations
 # ---------------------------------------------------------------------------
 

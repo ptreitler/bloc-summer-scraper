@@ -98,7 +98,9 @@ def cmd_recommend(args: argparse.Namespace) -> None:
     # Save colour-coded HTML table
     name_slug = args.name.lower().replace(" ", "_")
     region_slug = args.region.lower().replace(" ", "_")
-    out_path = Path("data") / f"recommend_{region_slug}_{name_slug}.html"
+    out_dir = Path("data") / "recommend"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{region_slug}_{name_slug}.html"
 
     rows_html = []
     for i, row in df.iterrows():
@@ -231,7 +233,9 @@ def cmd_participants(args: argparse.Namespace) -> None:
 
     # ---- HTML output ----
     region_slug = args.region.lower().replace(" ", "_")
-    out_path = Path("data") / f"participants_{region_slug}.html"
+    out_dir = Path("data") / "participants"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{region_slug}.html"
 
     def pct_style(pct: float) -> str:
         if pct >= 70:
@@ -321,6 +325,223 @@ def cmd_participants(args: argparse.Namespace) -> None:
     console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
 
 
+def cmd_leaderboard(args: argparse.Namespace) -> None:
+    from analyze import load_data, leaderboard_summary
+
+    try:
+        data = load_data(region=args.region)
+    except FileNotFoundError as e:
+        console.print(f"[red]{e}[/red]")
+        sys.exit(1)
+
+    top_n = args.top
+    lb = leaderboard_summary(data, top_n=top_n)
+    top_df = lb["top_df"]
+    brackets_df = lb["brackets_df"]
+    visits_df = lb["visits_df"]
+    diff_df = lb["diff_df"]
+    max_boulders = lb["max_boulders"]
+
+    # ---- terminal output ----
+    for cls_name in top_df["class"].unique():
+        rows = top_df[top_df["class"] == cls_name]
+        t = Table(
+            title=f"Top {top_n} — [bold]{cls_name}[/bold] ({args.region})",
+            show_header=True, header_style="bold",
+        )
+        t.add_column("#", justify="right", style="dim")
+        t.add_column("Name")
+        t.add_column("Score", justify="right")
+        t.add_column("% of max", justify="right")
+        for _, row in rows.iterrows():
+            pos = int(row["position"])
+            medal = {1: "[yellow]1[/yellow]", 2: "[white]2[/white]", 3: "[yellow3]3[/yellow3]"}.get(pos, str(pos))
+            t.add_row(medal, row["name"], str(int(row["score"])), f"{row['score_pct']:.1f}%")
+        console.print(t)
+
+    for cls_name in brackets_df["class"].unique():
+        rows = brackets_df[brackets_df["class"] == cls_name]
+        t = Table(
+            title=f"Score distribution — [bold]{cls_name}[/bold]  (max {max_boulders} boulders)",
+            show_header=True, header_style="bold",
+        )
+        t.add_column("Band (% of max)")
+        t.add_column("Competitors", justify="right")
+        t.add_column("% of field", justify="right")
+        colors = ["red", "yellow", "cyan", "green"]
+        for (_, row), color in zip(rows.iterrows(), colors):
+            t.add_row(
+                f"[{color}]{row['bracket']}[/{color}]",
+                str(int(row["count"])),
+                f"{row['field_pct']:.1f}%",
+            )
+        console.print(t)
+
+    for cls_name in visits_df["class"].unique():
+        rows = visits_df[visits_df["class"] == cls_name]
+        t = Table(
+            title=f"Gyms visited — [bold]{cls_name}[/bold]",
+            show_header=True, header_style="bold",
+        )
+        t.add_column("Gyms visited", justify="right")
+        t.add_column("Competitors", justify="right")
+        t.add_column("% of field", justify="right")
+        for _, row in rows.iterrows():
+            t.add_row(str(int(row["gyms_visited"])), str(int(row["count"])), f"{row['field_pct']:.1f}%")
+        console.print(t)
+
+    for cls_name in diff_df["class"].unique():
+        rows = diff_df[diff_df["class"] == cls_name]
+        t = Table(
+            title=f"Gym difficulty — [bold]{cls_name}[/bold]  (hardest first)",
+            show_header=True, header_style="bold",
+        )
+        t.add_column("Gym")
+        t.add_column("Visitors", justify="right")
+        t.add_column("Avg topped", justify="right")
+        t.add_column("Avg topped %", justify="right")
+        n_gyms = len(rows)
+        for i, (_, row) in enumerate(rows.iterrows()):
+            pct = row["avg_topped_pct"]
+            color = "green" if i >= n_gyms - 1 else "yellow" if i >= n_gyms // 2 else "red"
+            t.add_row(
+                row["gym"],
+                str(int(row["visitors"])),
+                f"{row['avg_topped']:.1f}",
+                f"[{color}]{pct:.1f}%[/{color}]",
+            )
+        console.print(t)
+
+    # ---- HTML output ----
+    region_slug = args.region.lower().replace(" ", "_")
+    out_dir = Path("data") / "leaderboard"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{region_slug}.html"
+
+    def bracket_style(band: str) -> str:
+        styles = {
+            "0–25 %":   "color:#a00000;background:#fff0f0",
+            "25–50 %":  "color:#8a6000;background:#fffbe6",
+            "50–75 %":  "color:#1a5c8a;background:#e8f4fb",
+            "75–100 %": "color:#2d7a2d;background:#eafaea",
+        }
+        return styles.get(band, "")
+
+    def pct_color_style(pct: float) -> str:
+        if pct >= 60:
+            return "color:#2d7a2d;background:#eafaea;font-weight:bold"
+        if pct >= 40:
+            return "color:#8a6000;background:#fffbe6;font-weight:bold"
+        return "color:#a00000;background:#fff0f0;font-weight:bold"
+
+    sections: list[str] = []
+
+    # Section 1 — top-N per class
+    for cls_name in top_df["class"].unique():
+        rows = top_df[top_df["class"] == cls_name]
+        tbody = "".join(
+            f"<tr>"
+            f"<td>{int(r['position'])}</td>"
+            f"<td style='text-align:left'>{r['name']}</td>"
+            f"<td>{int(r['score'])}</td>"
+            f"<td>{r['score_pct']:.1f}%</td>"
+            f"</tr>"
+            for _, r in rows.iterrows()
+        )
+        sections.append(f"""
+<h2>Top {top_n} — {cls_name}</h2>
+<table>
+<thead><tr><th>#</th><th style="text-align:left">Name</th><th>Score</th><th>% of max</th></tr></thead>
+<tbody>{tbody}</tbody>
+</table>""")
+
+    # Section 2 — score brackets
+    sections.append("<h2>Score distribution</h2>")
+    for cls_name in brackets_df["class"].unique():
+        rows = brackets_df[brackets_df["class"] == cls_name]
+        tbody = "".join(
+            f"<tr>"
+            f"<td style='{bracket_style(r['bracket'])}'>{r['bracket']}</td>"
+            f"<td>{int(r['count'])}</td>"
+            f"<td>{r['field_pct']:.1f}%</td>"
+            f"</tr>"
+            for _, r in rows.iterrows()
+        )
+        sections.append(f"""
+<h3>{cls_name} <span class="meta">(max {max_boulders} boulders)</span></h3>
+<table>
+<thead><tr><th>Band</th><th>Competitors</th><th>% of field</th></tr></thead>
+<tbody>{tbody}</tbody>
+</table>""")
+
+    # Section 3 — gym visit distribution
+    sections.append("<h2>Gyms visited per competitor</h2>")
+    for cls_name in visits_df["class"].unique():
+        rows = visits_df[visits_df["class"] == cls_name]
+        tbody = "".join(
+            f"<tr><td>{int(r['gyms_visited'])}</td><td>{int(r['count'])}</td><td>{r['field_pct']:.1f}%</td></tr>"
+            for _, r in rows.iterrows()
+        )
+        sections.append(f"""
+<h3>{cls_name}</h3>
+<table>
+<thead><tr><th>Gyms visited</th><th>Competitors</th><th>% of field</th></tr></thead>
+<tbody>{tbody}</tbody>
+</table>""")
+
+    # Section 4 — gym difficulty
+    sections.append("<h2>Gym difficulty ranking <span class=\"meta\">(hardest first)</span></h2>")
+    for cls_name in diff_df["class"].unique():
+        rows = diff_df[diff_df["class"] == cls_name]
+        n_gyms = len(rows)
+        tbody_parts = []
+        for i, (_, r) in enumerate(rows.iterrows()):
+            style = pct_color_style(r["avg_topped_pct"])
+            tbody_parts.append(
+                f"<tr>"
+                f"<td style='text-align:left'>{r['gym']}</td>"
+                f"<td>{int(r['visitors'])}</td>"
+                f"<td>{r['avg_topped']:.1f}</td>"
+                f"<td style='{style}'>{r['avg_topped_pct']:.1f}%</td>"
+                f"</tr>"
+            )
+        sections.append(f"""
+<h3>{cls_name}</h3>
+<table>
+<thead><tr>
+  <th style="text-align:left">Gym</th><th>Visitors</th><th>Avg topped</th><th>Avg topped %</th>
+</tr></thead>
+<tbody>{"".join(tbody_parts)}</tbody>
+</table>""")
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leaderboard — {args.region}</title>
+<style>
+  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 860px; }}
+  h1 {{ font-size: 1.3rem; margin-bottom: 0.1rem; }}
+  h2 {{ font-size: 1.1rem; margin: 2rem 0 0.3rem; border-bottom: 2px solid #ddd; padding-bottom: 0.2rem; }}
+  h3 {{ font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #444; }}
+  p.meta, span.meta {{ color: #777; font-size: 0.85rem; }}
+  table {{ border-collapse: collapse; width: 100%; margin-bottom: 0.8rem; }}
+  th, td {{ padding: 0.4rem 0.7rem; border: 1px solid #ddd; text-align: right; }}
+  th {{ background: #f0f0f0; font-weight: 600; }}
+  tr:nth-child(even) td {{ background: #fafafa; }}
+</style>
+</head>
+<body>
+<h1>Leaderboard — <strong>{args.region}</strong></h1>
+<p class="meta">Scraped: {lb['scraped_at']}</p>
+{"".join(sections)}
+</body>
+</html>"""
+
+    out_path.write_text(html, encoding="utf-8")
+    console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Bloc Summer Sessions — scraper and stats tool"
@@ -381,6 +602,21 @@ def main() -> None:
         help="Region to show participants for (default: Graz)",
     )
     p_part.set_defaults(func=cmd_participants)
+
+    # -- leaderboard --
+    p_lb = sub.add_parser(
+        "leaderboard",
+        help="Top-N rankings, score distribution, gym visit breakdown, difficulty ranking",
+    )
+    p_lb.add_argument(
+        "--region", choices=region_choices, default="Graz",
+        help="Region (default: Graz)",
+    )
+    p_lb.add_argument(
+        "--top", type=int, default=10, metavar="N",
+        help="Number of top competitors to show per class (default: 10)",
+    )
+    p_lb.set_defaults(func=cmd_leaderboard)
 
     args = parser.parse_args()
     args.func(args)

@@ -1,6 +1,8 @@
 data/*.json
 data/*.png
-data/recommend
+data/recommend/
+data/participants/
+data/leaderboard/
 __pycache__/
 *.pyc
 *.pyo
