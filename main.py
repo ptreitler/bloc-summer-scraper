@@ -121,75 +121,13 @@ def cmd_recommend(args: argparse.Namespace) -> None:
 
     console.print(table)
 
-    # Save colour-coded HTML table
+    from web.rendering import render_recommend
     name_slug = args.name.lower().replace(" ", "_")
     region_slug = args.region.lower().replace(" ", "_")
     out_dir = Path("data") / "recommend"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{region_slug}_{name_slug}.html"
-
-    tag_th = "<th>Tags</th>" if has_tags else ""
-    rows_html = []
-    for i, row in df.iterrows():
-        pct = row["topped_pct"]
-        if pct >= 60:
-            color = "#2d7a2d"
-            bg = "#eafaea"
-        elif pct >= 30:
-            color = "#8a6000"
-            bg = "#fffbe6"
-        else:
-            color = "#a00000"
-            bg = "#fff0f0"
-        tag_list = _get_tags(tags, args.region, row["gym"], int(row["boulder"]))
-        tag_cell = f"<td>{', '.join(tag_list)}</td>" if has_tags else ""
-        rows_html.append(
-            f"<tr>"
-            f"<td>{int(i) + 1}</td>"
-            f"<td>{row['gym']}</td>"
-            f"<td>{int(row['boulder'])}</td>"
-            f"<td>{int(row['topped_count'])}</td>"
-            f"<td>{int(row['total'])}</td>"
-            f"<td style='color:{color};background:{bg};font-weight:bold'>{pct:.1f}%</td>"
-            f"{tag_cell}"
-            f"</tr>"
-        )
-
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Recommendations — {args.name}</title>
-<style>
-  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; }}
-  h1 {{ font-size: 1.1rem; margin-bottom: 0.25rem; }}
-  p.subtitle {{ color: #555; font-size: 0.9rem; margin-top: 0; }}
-  table {{ border-collapse: collapse; width: 100%; max-width: 820px; }}
-  th, td {{ padding: 0.45rem 0.75rem; text-align: left; border: 1px solid #ddd; }}
-  th {{ background: #f0f0f0; font-weight: 600; }}
-  tr:nth-child(even) td {{ background: #fafafa; }}
-  td:nth-child(1), td:nth-child(3), td:nth-child(4), td:nth-child(5) {{ text-align: right; }}
-  td:nth-child(6) {{ text-align: right; border-radius: 3px; }}
-</style>
-</head>
-<body>
-<h1>Untapped boulders for <strong>{args.name}</strong></h1>
-<p class="subtitle">Region: {args.region} &nbsp;|&nbsp; Sorted by peers' completion rate — most reachable first</p>
-<table>
-<thead>
-<tr>
-  <th>#</th><th>Gym</th><th>Boulder</th>
-  <th>Topped by peers</th><th>Total peers</th><th>Peer completion %</th>{tag_th}
-</tr>
-</thead>
-<tbody>
-{"".join(rows_html)}
-</tbody>
-</table>
-</body>
-</html>"""
-
-    out_path.write_text(html, encoding="utf-8")
+    out_path.write_text(render_recommend(df, args.region, args.name, tags), encoding="utf-8")
     console.print(f"  Saved: [cyan]{out_path}[/cyan]")
 
 
@@ -267,179 +205,12 @@ def cmd_participants(args: argparse.Namespace) -> None:
             )
         console.print(t_gym)
 
-    # ---- HTML output ----
+    from web.rendering import render_participants
     region_slug = args.region.lower().replace(" ", "_")
     out_dir = Path("data") / "participants"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{region_slug}.html"
-
-    def pct_style(pct: float) -> str:
-        if pct >= 70:
-            return "color:#2d7a2d;background:#eafaea;font-weight:bold"
-        if pct >= 40:
-            return "color:#8a6000;background:#fffbe6;font-weight:bold"
-        return "color:#a00000;background:#fff0f0;font-weight:bold"
-
-    def bracket_style(band: str) -> str:
-        return {
-            "0–25 %":   "color:#a00000;background:#fff0f0",
-            "25–50 %":  "color:#8a6000;background:#fffbe6",
-            "50–75 %":  "color:#1a5c8a;background:#e8f4fb",
-            "75–100 %": "color:#2d7a2d;background:#eafaea",
-        }.get(band, "")
-
-    def difficulty_style(pct: float) -> str:
-        if pct >= 60:
-            return "color:#2d7a2d;background:#eafaea;font-weight:bold"
-        if pct >= 40:
-            return "color:#8a6000;background:#fffbe6;font-weight:bold"
-        return "color:#a00000;background:#fff0f0;font-weight:bold"
-
-    # overall table rows
-    overall_rows_html = []
-    for _, row in overall.iterrows():
-        bold = " font-weight:bold; background:#f5f5f5;" if row["class"] == "All" else ""
-        overall_rows_html.append(
-            f"<tr style='{bold}'>"
-            f"<td>{row['class']}</td>"
-            f"<td>{int(row['count'])}</td>"
-            f"<td>{row['avg_score']:.1f}</td>"
-            f"<td>{row['median_score']:.1f}</td>"
-            f"<td>{row['avg_total']:.1f}</td>"
-            f"<td>{row['avg_pct']:.1f}%</td>"
-            f"</tr>"
-        )
-
-    # per-gym activation sections
-    gym_sections_html = []
-    for gym in gyms:
-        g = gym_df[gym_df["gym"] == gym]
-        gym_rows_html = []
-        for _, row in g.iterrows():
-            act = row["activation_pct"]
-            bold_style = " font-weight:bold; background:#f5f5f5;" if row["class"] == "All" else ""
-            gym_rows_html.append(
-                f"<tr style='{bold_style}'>"
-                f"<td>{row['class']}</td>"
-                f"<td>{int(row['enrolled'])}</td>"
-                f"<td>{int(row['visitors'])}</td>"
-                f"<td style='{pct_style(act)}'>{act:.1f}%</td>"
-                f"<td>{row['avg_topped']:.1f}</td>"
-                f"<td>{row['avg_topped_pct']:.1f}%</td>"
-                f"</tr>"
-            )
-        gym_sections_html.append(f"""
-<h3>{gym}</h3>
-<table>
-<thead><tr>
-  <th>Class</th><th>Enrolled</th><th>Visited</th>
-  <th>Activation %</th><th>Avg topped</th><th>Avg topped %</th>
-</tr></thead>
-<tbody>{"".join(gym_rows_html)}</tbody>
-</table>""")
-
-    # score distribution sections
-    bracket_sections_html = []
-    for cls_name in brackets_df["class"].unique():
-        rows = brackets_df[brackets_df["class"] == cls_name]
-        tbody = "".join(
-            f"<tr>"
-            f"<td style='{bracket_style(r['bracket'])}'>{r['bracket']}</td>"
-            f"<td>{int(r['count'])}</td>"
-            f"<td>{r['field_pct']:.1f}%</td>"
-            f"</tr>"
-            for _, r in rows.iterrows()
-        )
-        bracket_sections_html.append(f"""
-<h3>{cls_name} <span class="meta">(max {max_boulders} boulders)</span></h3>
-<table>
-<thead><tr><th>Band</th><th>Competitors</th><th>% of field</th></tr></thead>
-<tbody>{tbody}</tbody>
-</table>""")
-
-    # gym visit distribution sections
-    visit_sections_html = []
-    for cls_name in visits_df["class"].unique():
-        rows = visits_df[visits_df["class"] == cls_name]
-        tbody = "".join(
-            f"<tr><td>{int(r['gyms_visited'])}</td><td>{int(r['count'])}</td><td>{r['field_pct']:.1f}%</td></tr>"
-            for _, r in rows.iterrows()
-        )
-        visit_sections_html.append(f"""
-<h3>{cls_name}</h3>
-<table>
-<thead><tr><th>Gyms visited</th><th>Competitors</th><th>% of field</th></tr></thead>
-<tbody>{tbody}</tbody>
-</table>""")
-
-    # gym difficulty sections
-    diff_sections_html = []
-    for cls_name in diff_df["class"].unique():
-        rows = diff_df[diff_df["class"] == cls_name]
-        tbody = "".join(
-            f"<tr>"
-            f"<td style='text-align:left'>{r['gym']}</td>"
-            f"<td>{int(r['visitors'])}</td>"
-            f"<td>{r['avg_topped']:.1f}</td>"
-            f"<td style='{difficulty_style(r['avg_topped_pct'])}'>{r['avg_topped_pct']:.1f}%</td>"
-            f"</tr>"
-            for _, r in rows.iterrows()
-        )
-        diff_sections_html.append(f"""
-<h3>{cls_name}</h3>
-<table>
-<thead><tr>
-  <th style="text-align:left">Gym</th><th>Visitors</th><th>Avg topped</th><th>Avg topped %</th>
-</tr></thead>
-<tbody>{tbody}</tbody>
-</table>""")
-
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Participants — {args.region}</title>
-<style>
-  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 860px; }}
-  h1 {{ font-size: 1.3rem; margin-bottom: 0.1rem; }}
-  h2 {{ font-size: 1.05rem; margin: 2rem 0 0.3rem; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 0.2rem; }}
-  h3 {{ font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #444; }}
-  p.meta, span.meta {{ color: #777; font-size: 0.85rem; margin-top: 0; }}
-  table {{ border-collapse: collapse; width: 100%; margin-bottom: 0.8rem; }}
-  th, td {{ padding: 0.4rem 0.7rem; text-align: right; border: 1px solid #ddd; }}
-  th {{ background: #f0f0f0; font-weight: 600; }}
-  th:first-child, td:first-child {{ text-align: left; }}
-  tr:nth-child(even) td {{ background: #fafafa; }}
-</style>
-</head>
-<body>
-<h1>Participants — <strong>{args.region}</strong></h1>
-<p class="meta">Scraped: {summary['scraped_at']}</p>
-
-<h2>Overview</h2>
-<table>
-<thead><tr>
-  <th>Class</th><th>Count</th><th>Avg score</th><th>Median score</th>
-  <th>Avg topped</th><th>Avg completion %</th>
-</tr></thead>
-<tbody>{"".join(overall_rows_html)}</tbody>
-</table>
-
-<h2>Gym activation</h2>
-{"".join(gym_sections_html)}
-
-<h2>Score distribution</h2>
-{"".join(bracket_sections_html)}
-
-<h2>Gyms visited per competitor</h2>
-{"".join(visit_sections_html)}
-
-<h2>Gym difficulty <span class="meta">(hardest first)</span></h2>
-{"".join(diff_sections_html)}
-</body>
-</html>"""
-
-    out_path.write_text(html, encoding="utf-8")
+    out_path.write_text(render_participants(summary, lb, args.region), encoding="utf-8")
     console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
 
 
@@ -546,126 +317,13 @@ def cmd_score(args: argparse.Namespace) -> None:
         else:
             console.print(f"[bold]{gym}[/bold]: [dim]none[/dim]")
 
-    # ── HTML output ─────────────────────────────────────────────────────────
+    from web.rendering import render_score
     name_slug = name.lower().replace(" ", "_")
     region_slug = region.lower().replace(" ", "_")
     out_dir = Path("data") / "score"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{region_slug}_{name_slug}.html"
-
-    # gym breakdown rows
-    total_topped = int(sc["gym_stats"]["topped"].sum())
-    total_max = int(sc["gym_stats"]["n_boulders"].sum())
-    total_pct = total_topped / total_max * 100 if total_max else 0.0
-    gym_rows_html = []
-    for _, row in sc["gym_stats"].iterrows():
-        rank_str = f"{int(row['gym_rank'])}&thinsp;/&thinsp;{int(row['gym_visitors'])}" if row["gym_rank"] is not None else "—"
-        gym_rows_html.append(
-            f"<tr><td>{row['gym']}</td>"
-            f"<td>{int(row['topped'])}&thinsp;/&thinsp;{int(row['n_boulders'])}</td>"
-            f"<td>{row['pct']:.1f}%</td>"
-            f"<td>{rank_str}</td></tr>"
-        )
-    gym_rows_html.append(
-        f"<tr style='font-weight:bold;border-top:2px solid #bbb'>"
-        f"<td>Total</td>"
-        f"<td>{total_topped}&thinsp;/&thinsp;{total_max}</td>"
-        f"<td>{total_pct:.1f}%</td>"
-        f"<td>{sc['rank']}&thinsp;/&thinsp;{sc['total_competitors']}</td></tr>"
-    )
-
-    # hardest topped rows
-    hard_rows_html = []
-    for _, row in sc["hardest_topped"].iterrows():
-        pct = row["topped_pct"]
-        color = "#2d7a2d" if pct >= 60 else "#8a6000" if pct >= 30 else "#a00000"
-        bg = "#eafaea" if pct >= 60 else "#fffbe6" if pct >= 30 else "#fff0f0"
-        tag_list = _get_tags(tags, region, row["gym"], int(row["boulder"]))
-        tag_cell = f"<td style='color:#555'>{', '.join(tag_list)}</td>" if has_tags else ""
-        hard_rows_html.append(
-            f"<tr><td>{row['gym']}</td>"
-            f"<td>{int(row['boulder'])}</td>"
-            f"<td>{int(row['topped_count'])}&thinsp;/&thinsp;{int(row['total_peers'])}</td>"
-            f"<td style='color:{color};background:{bg};font-weight:bold'>{pct:.1f}%</td>"
-            f"{tag_cell}</tr>"
-        )
-
-    # boulder grids per gym
-    grid_sections_html = []
-    for _, gym_row in sc["gym_stats"].iterrows():
-        gym = gym_row["gym"]
-        topped_set = set(sc["topped_per_gym"].get(gym, []))
-        n = int(gym_row["n_boulders"])
-        cells = []
-        for b in range(1, n + 1):
-            tag_list = _get_tags(tags, region, gym, b)
-            tag_title = f' title="{", ".join(tag_list)}"' if tag_list else ""
-            tag_cls = " has-tags" if tag_list else ""
-            if b in topped_set:
-                cells.append(f"<span class='b-topped{tag_cls}'{tag_title}>{b}</span>")
-            else:
-                cells.append(f"<span class='b-miss{tag_cls}'{tag_title}>{b}</span>")
-        topped_count = int(gym_row["topped"])
-        pct = gym_row["pct"]
-        grid_sections_html.append(
-            f"<h3>{gym} <small>({topped_count}&thinsp;/&thinsp;{n}, {pct:.1f}%)</small></h3>"
-            f"<div class='boulder-grid'>{''.join(cells)}</div>"
-        )
-
-    hardest_section = ""
-    if hard_rows_html:
-        tag_th = "<th>Tags</th>" if has_tags else ""
-        hardest_section = f"""
-<h2>Top 5 hardest boulders topped</h2>
-<table>
-<thead><tr><th>Gym</th><th>Boulder</th><th>Topped&thinsp;/&thinsp;Peers</th><th>Peer %</th>{tag_th}</tr></thead>
-<tbody>{"".join(hard_rows_html)}</tbody>
-</table>"""
-
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Score — {name}</title>
-<style>
-  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 860px; }}
-  h1 {{ font-size: 1.25rem; margin-bottom: 0.1rem; }}
-  p.sub {{ color: #555; font-size: 0.9rem; margin-top: 0; margin-bottom: 1.5rem; }}
-  h2 {{ font-size: 1rem; margin: 1.5rem 0 0.4rem; border-bottom: 1px solid #ddd; padding-bottom: 0.2rem; }}
-  h3 {{ font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #333; }}
-  h3 small {{ font-weight: normal; color: #666; }}
-  table {{ border-collapse: collapse; width: 100%; margin-bottom: 1rem; }}
-  th, td {{ padding: 0.4rem 0.7rem; border: 1px solid #ddd; }}
-  th {{ background: #f0f0f0; font-weight: 600; text-align: left; }}
-  td {{ text-align: right; }}
-  td:first-child {{ text-align: left; }}
-  tr:nth-child(even) td {{ background: #fafafa; }}
-  .boulder-grid {{ display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.5rem; }}
-  .b-topped, .b-miss {{
-    display: inline-block; width: 2rem; text-align: center;
-    padding: 0.2rem 0; border-radius: 4px; font-size: 0.8rem; font-weight: 600;
-  }}
-  .b-topped {{ background: #c6efce; color: #276221; }}
-  .b-miss   {{ background: #f0f0f0; color: #999; }}
-  .has-tags::after {{ content: '\00B7'; font-size: 0.55rem; vertical-align: super; color: #e06c00; margin-left: 1px; }}
-</style>
-</head>
-<body>
-<h1>Score card — <strong>{name}</strong></h1>
-<p class="sub">{cls_name} &nbsp;|&nbsp; {region} &nbsp;|&nbsp; Rank {sc['rank']} of {sc['total_competitors']} &nbsp;|&nbsp; {sc['score']}&thinsp;/&thinsp;{sc['comp_total']} boulders ({sc['score_pct']:.1f}%)</p>
-
-<h2>Gym breakdown</h2>
-<table>
-<thead><tr><th>Gym</th><th>Topped&thinsp;/&thinsp;Max</th><th>%</th><th>Rank</th></tr></thead>
-<tbody>{"".join(gym_rows_html)}</tbody>
-</table>
-{hardest_section}
-<h2>Boulders topped per gym</h2>
-{"".join(grid_sections_html)}
-</body>
-</html>"""
-
-    out_path.write_text(html, encoding="utf-8")
+    out_path.write_text(render_score(sc, region, tags), encoding="utf-8")
     console.print(f"  Saved: [cyan]{out_path}[/cyan]")
 
 
@@ -776,122 +434,14 @@ def cmd_compare(args: argparse.Namespace) -> None:
     _print_exclusive(cmp["only_a"], na, nb)
     _print_exclusive(cmp["only_b"], nb, na)
 
-    # ── HTML output ──────────────────────────────────────────────────────────
+    from web.rendering import render_compare
     slug_a = na.lower().replace(" ", "_")
     slug_b = nb.lower().replace(" ", "_")
     region_slug = region.lower().replace(" ", "_")
     out_dir = Path("data") / "compare"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{region_slug}_{slug_a}_vs_{slug_b}.html"
-
-    def _pct_style(pct: float) -> str:
-        if pct >= 60:
-            return "color:#2d7a2d;background:#eafaea"
-        if pct >= 30:
-            return "color:#8a6000;background:#fffbe6"
-        return "color:#a00000;background:#fff0f0"
-
-    # overall rows
-    winner_score = "a" if sa > sb else ("b" if sb > sa else "")
-    hl_a = " style='font-weight:bold'" if winner_score == "a" else ""
-    hl_b = " style='font-weight:bold'" if winner_score == "b" else ""
-    overall_html = f"""
-<table>
-<thead><tr><th></th><th>{na}</th><th>{nb}</th></tr></thead>
-<tbody>
-<tr><td>Rank</td><td{hl_a}>{cmp['rank_a']} / {n_competitors}</td><td{hl_b}>{cmp['rank_b']} / {n_competitors}</td></tr>
-<tr><td>Score</td><td{hl_a}>{sa} / {total}</td><td{hl_b}>{sb} / {total}</td></tr>
-<tr><td>%</td><td{hl_a}>{pct_a:.1f}%</td><td{hl_b}>{pct_b:.1f}%</td></tr>
-</tbody>
-</table>"""
-
-    # gym rows
-    gym_html_rows = []
-    for _, row in cmp["gym_cmp"].iterrows():
-        n = int(row["n_boulders"])
-        win = "a" if row["topped_a"] > row["topped_b"] else ("b" if row["topped_b"] > row["topped_a"] else "")
-        hla = " style='font-weight:bold'" if win == "a" else ""
-        hlb = " style='font-weight:bold'" if win == "b" else ""
-        gym_html_rows.append(
-            f"<tr><td>{row['gym']}</td>"
-            f"<td{hla}>{int(row['topped_a'])}&thinsp;/&thinsp;{n} ({row['pct_a']:.1f}%)</td>"
-            f"<td{hlb}>{int(row['topped_b'])}&thinsp;/&thinsp;{n} ({row['pct_b']:.1f}%)</td></tr>"
-        )
-    win_total = "a" if total_a > total_b else ("b" if total_b > total_a else "")
-    hla = " style='font-weight:bold'" if win_total == "a" else ""
-    hlb = " style='font-weight:bold'" if win_total == "b" else ""
-    gym_html_rows.append(
-        f"<tr style='border-top:2px solid #bbb'>"
-        f"<td><strong>Total</strong></td>"
-        f"<td{hla}><strong>{total_a}&thinsp;/&thinsp;{total_n} ({tpct_a:.1f}%)</strong></td>"
-        f"<td{hlb}><strong>{total_b}&thinsp;/&thinsp;{total_n} ({tpct_b:.1f}%)</strong></td></tr>"
-    )
-
-    def _exclusive_html(df, owner: str, other: str) -> str:
-        if df.empty:
-            return f"<p class='none'>{owner} has no boulders that {other} hasn't also topped.</p>"
-        tag_th = "<th>Tags</th>" if has_tags else ""
-        rows = []
-        for _, row in df.iterrows():
-            pct = row["topped_pct"]
-            style = _pct_style(pct)
-            tag_list = _get_tags(tags, region, row["gym"], int(row["boulder"]))
-            tag_cell = f"<td style='color:#555'>{', '.join(tag_list)}</td>" if has_tags else ""
-            rows.append(
-                f"<tr><td>{row['gym']}</td>"
-                f"<td>{int(row['boulder'])}</td>"
-                f"<td>{int(row['topped_count'])}&thinsp;/&thinsp;{int(row['total_peers'])}</td>"
-                f"<td style='{style};font-weight:bold'>{pct:.1f}%</td>"
-                f"{tag_cell}</tr>"
-            )
-        return (
-            f"<table>"
-            f"<thead><tr><th>Gym</th><th>Boulder</th><th>Peers topped</th><th>Peer %</th>{tag_th}</tr></thead>"
-            f"<tbody>{''.join(rows)}</tbody>"
-            f"</table>"
-        )
-
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Compare — {na} vs {nb}</title>
-<style>
-  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 900px; }}
-  h1 {{ font-size: 1.2rem; margin-bottom: 0.1rem; }}
-  p.sub {{ color: #555; font-size: 0.9rem; margin-top: 0; margin-bottom: 1.5rem; }}
-  h2 {{ font-size: 1rem; margin: 1.5rem 0 0.4rem; border-bottom: 1px solid #ddd; padding-bottom: 0.2rem; }}
-  table {{ border-collapse: collapse; width: 100%; margin-bottom: 0.5rem; }}
-  th, td {{ padding: 0.4rem 0.7rem; border: 1px solid #ddd; }}
-  th {{ background: #f0f0f0; font-weight: 600; text-align: left; }}
-  td {{ text-align: right; }}
-  td:first-child {{ text-align: left; }}
-  tr:nth-child(even) td {{ background: #fafafa; }}
-  p.none {{ color: #888; font-style: italic; font-size: 0.9rem; }}
-</style>
-</head>
-<body>
-<h1>Compare — <strong>{na}</strong> vs <strong>{nb}</strong></h1>
-<p class="sub">{cmp['class_name']} &nbsp;|&nbsp; {region}</p>
-
-<h2>Overall</h2>
-{overall_html}
-
-<h2>Gym breakdown</h2>
-<table>
-<thead><tr><th>Gym</th><th>{na}</th><th>{nb}</th></tr></thead>
-<tbody>{"".join(gym_html_rows)}</tbody>
-</table>
-
-<h2>Topped by {na}, not by {nb}</h2>
-{_exclusive_html(cmp['only_a'], na, nb)}
-
-<h2>Topped by {nb}, not by {na}</h2>
-{_exclusive_html(cmp['only_b'], nb, na)}
-</body>
-</html>"""
-
-    out_path.write_text(html, encoding="utf-8")
+    out_path.write_text(render_compare(cmp, region, tags), encoding="utf-8")
     console.print(f"  Saved: [cyan]{out_path}[/cyan]")
 
 
@@ -1070,135 +620,15 @@ def cmd_leaderboard(args: argparse.Namespace) -> None:
             )
         console.print(t)
 
-    # ---- HTML output ----
+    from web.rendering import render_leaderboard
     region_slug = args.region.lower().replace(" ", "_")
     out_dir = Path("data") / "leaderboard"
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{region_slug}.html"
-
-    def bracket_style(band: str) -> str:
-        styles = {
-            "0–25 %":   "color:#a00000;background:#fff0f0",
-            "25–50 %":  "color:#8a6000;background:#fffbe6",
-            "50–75 %":  "color:#1a5c8a;background:#e8f4fb",
-            "75–100 %": "color:#2d7a2d;background:#eafaea",
-        }
-        return styles.get(band, "")
-
-    def pct_color_style(pct: float) -> str:
-        if pct >= 60:
-            return "color:#2d7a2d;background:#eafaea;font-weight:bold"
-        if pct >= 40:
-            return "color:#8a6000;background:#fffbe6;font-weight:bold"
-        return "color:#a00000;background:#fff0f0;font-weight:bold"
-
-    sections: list[str] = []
-
-    # Section 1 — top-N per class
-    for cls_name in top_df["class"].unique():
-        rows = top_df[top_df["class"] == cls_name]
-        tbody = "".join(
-            f"<tr>"
-            f"<td>{int(r['position'])}</td>"
-            f"<td style='text-align:left'>{r['name']}</td>"
-            f"<td>{int(r['score'])}</td>"
-            f"<td>{r['score_pct']:.1f}%</td>"
-            f"</tr>"
-            for _, r in rows.iterrows()
-        )
-        heading = f"Top {top_n} — {cls_name}" if top_n else f"Leaderboard — {cls_name}"
-        sections.append(f"""
-<h2>{heading}</h2>
-<table>
-<thead><tr><th>#</th><th style="text-align:left">Name</th><th>Score</th><th>% of max</th></tr></thead>
-<tbody>{tbody}</tbody>
-</table>""")
-
-    # Section 2 — score brackets
-    sections.append("<h2>Score distribution</h2>")
-    for cls_name in brackets_df["class"].unique():
-        rows = brackets_df[brackets_df["class"] == cls_name]
-        tbody = "".join(
-            f"<tr>"
-            f"<td style='{bracket_style(r['bracket'])}'>{r['bracket']}</td>"
-            f"<td>{int(r['count'])}</td>"
-            f"<td>{r['field_pct']:.1f}%</td>"
-            f"</tr>"
-            for _, r in rows.iterrows()
-        )
-        sections.append(f"""
-<h3>{cls_name} <span class="meta">(max {max_boulders} boulders)</span></h3>
-<table>
-<thead><tr><th>Band</th><th>Competitors</th><th>% of field</th></tr></thead>
-<tbody>{tbody}</tbody>
-</table>""")
-
-    # Section 3 — gym visit distribution
-    sections.append("<h2>Gyms visited per competitor</h2>")
-    for cls_name in visits_df["class"].unique():
-        rows = visits_df[visits_df["class"] == cls_name]
-        tbody = "".join(
-            f"<tr><td>{int(r['gyms_visited'])}</td><td>{int(r['count'])}</td><td>{r['field_pct']:.1f}%</td></tr>"
-            for _, r in rows.iterrows()
-        )
-        sections.append(f"""
-<h3>{cls_name}</h3>
-<table>
-<thead><tr><th>Gyms visited</th><th>Competitors</th><th>% of field</th></tr></thead>
-<tbody>{tbody}</tbody>
-</table>""")
-
-    # Section 4 — gym difficulty
-    sections.append("<h2>Gym difficulty ranking <span class=\"meta\">(hardest first)</span></h2>")
-    for cls_name in diff_df["class"].unique():
-        rows = diff_df[diff_df["class"] == cls_name]
-        n_gyms = len(rows)
-        tbody_parts = []
-        for i, (_, r) in enumerate(rows.iterrows()):
-            style = pct_color_style(r["avg_topped_pct"])
-            tbody_parts.append(
-                f"<tr>"
-                f"<td style='text-align:left'>{r['gym']}</td>"
-                f"<td>{int(r['visitors'])}</td>"
-                f"<td>{r['avg_topped']:.1f}</td>"
-                f"<td style='{style}'>{r['avg_topped_pct']:.1f}%</td>"
-                f"</tr>"
-            )
-        sections.append(f"""
-<h3>{cls_name}</h3>
-<table>
-<thead><tr>
-  <th style="text-align:left">Gym</th><th>Visitors</th><th>Avg topped</th><th>Avg topped %</th>
-</tr></thead>
-<tbody>{"".join(tbody_parts)}</tbody>
-</table>""")
-
-    html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Leaderboard — {args.region}</title>
-<style>
-  body {{ font-family: system-ui, sans-serif; padding: 1.5rem; color: #111; max-width: 860px; }}
-  h1 {{ font-size: 1.3rem; margin-bottom: 0.1rem; }}
-  h2 {{ font-size: 1.1rem; margin: 2rem 0 0.3rem; border-bottom: 2px solid #ddd; padding-bottom: 0.2rem; }}
-  h3 {{ font-size: 0.95rem; margin: 1rem 0 0.3rem; color: #444; }}
-  p.meta, span.meta {{ color: #777; font-size: 0.85rem; }}
-  table {{ border-collapse: collapse; width: 100%; margin-bottom: 0.8rem; }}
-  th, td {{ padding: 0.4rem 0.7rem; border: 1px solid #ddd; text-align: right; }}
-  th {{ background: #f0f0f0; font-weight: 600; }}
-  tr:nth-child(even) td {{ background: #fafafa; }}
-</style>
-</head>
-<body>
-<h1>Leaderboard — <strong>{args.region}</strong></h1>
-<p class="meta">Scraped: {lb['scraped_at']}</p>
-{"".join(sections)}
-</body>
-</html>"""
-
-    out_path.write_text(html, encoding="utf-8")
+    out_path.write_text(render_leaderboard(lb, args.region, top_n), encoding="utf-8")
     console.print(f"\n  Saved: [cyan]{out_path}[/cyan]")
+
+
 
 
 def main() -> None:
