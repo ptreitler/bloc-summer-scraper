@@ -649,13 +649,19 @@ def _fmt_cell(topped: int, total: int, pct: float) -> str:
     return f"[{color}]{topped}/{total} ({pct:.1f}%)[/{color}]"
 
 
-def print_stats_table(data: dict, class_filter: str = "all") -> None:
+def print_stats_table(data: dict, class_filter: str = "all", tags: dict | None = None, region: str = "") -> None:
     stats = boulder_completion_stats(data)
     if stats.empty:
         console.print("[red]No data available.[/red]")
         return
 
     gyms = sorted(stats["gym"].unique())
+    has_tags = bool(tags and tags.get(region))
+
+    def _tag_str(gym: str, b: int) -> str:
+        if not has_tags:
+            return ""
+        return ", ".join((tags or {}).get(region, {}).get(gym, {}).get(str(b), []))
 
     if class_filter == "all":
         # Wide table: boulder | Männer | Frauen | All
@@ -665,6 +671,8 @@ def print_stats_table(data: dict, class_filter: str = "all") -> None:
             table.add_column("Männer", justify="right")
             table.add_column("Frauen", justify="right")
             table.add_column("All", justify="right")
+            if has_tags:
+                table.add_column("Tags", style="dim")
 
             # Pivot to get all classes per boulder, sorted by boulder number
             gym_stats = stats[stats["gym"] == gym].set_index(["boulder", "class"])
@@ -680,6 +688,8 @@ def print_stats_table(data: dict, class_filter: str = "all") -> None:
                         )
                     except KeyError:
                         cells.append("[dim]—[/dim]")
+                if has_tags:
+                    cells.append(_tag_str(gym, b))
                 table.add_row(str(b), *cells)
 
             console.print(table)
@@ -699,15 +709,20 @@ def print_stats_table(data: dict, class_filter: str = "all") -> None:
             table.add_column("Topped", justify="right")
             table.add_column("Total", justify="right")
             table.add_column("Completion %", justify="right")
+            if has_tags:
+                table.add_column("Tags", style="dim")
 
             for _, row in gym_stats.iterrows():
                 color = _pct_color(row["topped_pct"])
-                table.add_row(
+                row_vals = [
                     str(int(row["boulder"])),
                     str(int(row["topped_count"])),
                     str(int(row["total"])),
                     f"[{color}]{row['topped_pct']:.1f}%[/{color}]",
-                )
+                ]
+                if has_tags:
+                    row_vals.append(_tag_str(gym, int(row["boulder"])))
+                table.add_row(*row_vals)
             console.print(table)
 
 

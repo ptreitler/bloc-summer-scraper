@@ -8,6 +8,7 @@ Commands:
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -15,6 +16,23 @@ from rich.console import Console
 from rich.table import Table
 
 console = Console()
+
+TAGS_FILE = Path("data") / "tags.json"
+
+
+def _load_tags() -> dict:
+    if TAGS_FILE.exists():
+        return json.loads(TAGS_FILE.read_text(encoding="utf-8"))
+    return {}
+
+
+def _save_tags(tags: dict) -> None:
+    TAGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    TAGS_FILE.write_text(json.dumps(tags, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def _get_tags(tags: dict, region: str, gym: str, boulder: int) -> list[str]:
+    return tags.get(region, {}).get(gym, {}).get(str(boulder), [])
 
 
 def cmd_scrape(args: argparse.Namespace) -> None:
@@ -31,8 +49,9 @@ def cmd_stats(args: argparse.Namespace) -> None:
         console.print(f"[red]{e}[/red]")
         sys.exit(1)
 
+    tags = _load_tags()
     class_filter = args.cls if args.cls else "all"
-    print_stats_table(data, class_filter)
+    print_stats_table(data, class_filter, tags=tags, region=args.region)
 
     if args.chart:
         console.print("\n[bold]Saving charts...[/bold]")
@@ -68,6 +87,8 @@ def cmd_recommend(args: argparse.Namespace) -> None:
         console.print(f"[green]{args.name} has topped every single boulder — impressive![/green]")
         return
 
+    tags = _load_tags()
+    has_tags = bool(tags.get(args.region))
     table = Table(
         title=f"Untapped boulders for [bold]{args.name}[/bold] "
               "(sorted by peers' completion rate — most reachable first)",
@@ -80,18 +101,23 @@ def cmd_recommend(args: argparse.Namespace) -> None:
     table.add_column("Topped by peers", justify="right")
     table.add_column("Total peers", justify="right")
     table.add_column("Peer completion %", justify="right")
+    if has_tags:
+        table.add_column("Tags", style="dim")
 
     for i, row in df.iterrows():
         pct = row["topped_pct"]
         color = "green" if pct >= 60 else "yellow" if pct >= 30 else "red"
-        table.add_row(
+        cells = [
             str(int(i) + 1),
             row["gym"],
             str(int(row["boulder"])),
             str(int(row["topped_count"])),
             str(int(row["total"])),
             f"[{color}]{pct:.1f}%[/{color}]",
-        )
+        ]
+        if has_tags:
+            cells.append(", ".join(_get_tags(tags, args.region, row["gym"], int(row["boulder"]))))
+        table.add_row(*cells)
 
     console.print(table)
 
@@ -102,6 +128,7 @@ def cmd_recommend(args: argparse.Namespace) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{region_slug}_{name_slug}.html"
 
+    tag_th = "<th>Tags</th>" if has_tags else ""
     rows_html = []
     for i, row in df.iterrows():
         pct = row["topped_pct"]
@@ -114,6 +141,8 @@ def cmd_recommend(args: argparse.Namespace) -> None:
         else:
             color = "#a00000"
             bg = "#fff0f0"
+        tag_list = _get_tags(tags, args.region, row["gym"], int(row["boulder"]))
+        tag_cell = f"<td>{', '.join(tag_list)}</td>" if has_tags else ""
         rows_html.append(
             f"<tr>"
             f"<td>{int(i) + 1}</td>"
@@ -122,6 +151,7 @@ def cmd_recommend(args: argparse.Namespace) -> None:
             f"<td>{int(row['topped_count'])}</td>"
             f"<td>{int(row['total'])}</td>"
             f"<td style='color:{color};background:{bg};font-weight:bold'>{pct:.1f}%</td>"
+            f"{tag_cell}"
             f"</tr>"
         )
 
@@ -149,7 +179,7 @@ def cmd_recommend(args: argparse.Namespace) -> None:
 <thead>
 <tr>
   <th>#</th><th>Gym</th><th>Boulder</th>
-  <th>Topped by peers</th><th>Total peers</th><th>Peer completion %</th>
+  <th>Topped by peers</th><th>Total peers</th><th>Peer completion %</th>{tag_th}
 </tr>
 </thead>
 <tbody>
@@ -431,6 +461,8 @@ def cmd_score(args: argparse.Namespace) -> None:
     name = sc["name"]
     cls_name = sc["class_name"]
     region = args.region
+    tags = _load_tags()
+    has_tags = bool(tags.get(region))
 
     # ── 1. Overall summary ──────────────────────────────────────────────────
     summary = Table(title=f"Score card — [bold]{name}[/bold] ({cls_name}, {region})",
@@ -486,22 +518,31 @@ def cmd_score(args: argparse.Namespace) -> None:
         hard_t.add_column("Topped by", justify="right")
         hard_t.add_column("Peers", justify="right")
         hard_t.add_column("%", justify="right")
+        if has_tags:
+            hard_t.add_column("Tags", style="dim")
         for _, row in sc["hardest_topped"].iterrows():
             pct = row["topped_pct"]
             color = "green" if pct >= 60 else "yellow" if pct >= 30 else "red"
-            hard_t.add_row(
+            cells = [
                 row["gym"],
                 str(int(row["boulder"])),
                 str(int(row["topped_count"])),
                 str(int(row["total_peers"])),
                 f"[{color}]{pct:.1f}%[/{color}]",
-            )
+            ]
+            if has_tags:
+                cells.append(", ".join(_get_tags(tags, region, row["gym"], int(row["boulder"]))))
+            hard_t.add_row(*cells)
         console.print(hard_t)
 
     # ── 4. Boulders topped per gym ──────────────────────────────────────────
     for gym, boulders in sc["topped_per_gym"].items():
         if boulders:
-            console.print(f"[bold]{gym}[/bold]: {', '.join(str(b) for b in boulders)}")
+            parts = []
+            for b in boulders:
+                t_list = _get_tags(tags, region, gym, b)
+                parts.append(f"{b} [dim][{', '.join(t_list)}][/dim]" if t_list else str(b))
+            console.print(f"[bold]{gym}[/bold]: {', '.join(parts)}")
         else:
             console.print(f"[bold]{gym}[/bold]: [dim]none[/dim]")
 
@@ -539,11 +580,14 @@ def cmd_score(args: argparse.Namespace) -> None:
         pct = row["topped_pct"]
         color = "#2d7a2d" if pct >= 60 else "#8a6000" if pct >= 30 else "#a00000"
         bg = "#eafaea" if pct >= 60 else "#fffbe6" if pct >= 30 else "#fff0f0"
+        tag_list = _get_tags(tags, region, row["gym"], int(row["boulder"]))
+        tag_cell = f"<td style='color:#555'>{', '.join(tag_list)}</td>" if has_tags else ""
         hard_rows_html.append(
             f"<tr><td>{row['gym']}</td>"
             f"<td>{int(row['boulder'])}</td>"
             f"<td>{int(row['topped_count'])}&thinsp;/&thinsp;{int(row['total_peers'])}</td>"
-            f"<td style='color:{color};background:{bg};font-weight:bold'>{pct:.1f}%</td></tr>"
+            f"<td style='color:{color};background:{bg};font-weight:bold'>{pct:.1f}%</td>"
+            f"{tag_cell}</tr>"
         )
 
     # boulder grids per gym
@@ -554,10 +598,13 @@ def cmd_score(args: argparse.Namespace) -> None:
         n = int(gym_row["n_boulders"])
         cells = []
         for b in range(1, n + 1):
+            tag_list = _get_tags(tags, region, gym, b)
+            tag_title = f' title="{", ".join(tag_list)}"' if tag_list else ""
+            tag_cls = " has-tags" if tag_list else ""
             if b in topped_set:
-                cells.append(f"<span class='b-topped'>{b}</span>")
+                cells.append(f"<span class='b-topped{tag_cls}'{tag_title}>{b}</span>")
             else:
-                cells.append(f"<span class='b-miss'>{b}</span>")
+                cells.append(f"<span class='b-miss{tag_cls}'{tag_title}>{b}</span>")
         topped_count = int(gym_row["topped"])
         pct = gym_row["pct"]
         grid_sections_html.append(
@@ -567,10 +614,11 @@ def cmd_score(args: argparse.Namespace) -> None:
 
     hardest_section = ""
     if hard_rows_html:
+        tag_th = "<th>Tags</th>" if has_tags else ""
         hardest_section = f"""
 <h2>Top 5 hardest boulders topped</h2>
 <table>
-<thead><tr><th>Gym</th><th>Boulder</th><th>Topped&thinsp;/&thinsp;Peers</th><th>Peer %</th></tr></thead>
+<thead><tr><th>Gym</th><th>Boulder</th><th>Topped&thinsp;/&thinsp;Peers</th><th>Peer %</th>{tag_th}</tr></thead>
 <tbody>{"".join(hard_rows_html)}</tbody>
 </table>"""
 
@@ -599,6 +647,7 @@ def cmd_score(args: argparse.Namespace) -> None:
   }}
   .b-topped {{ background: #c6efce; color: #276221; }}
   .b-miss   {{ background: #f0f0f0; color: #999; }}
+  .has-tags::after {{ content: '\00B7'; font-size: 0.55rem; vertical-align: super; color: #e06c00; margin-left: 1px; }}
 </style>
 </head>
 <body>
@@ -637,6 +686,8 @@ def cmd_compare(args: argparse.Namespace) -> None:
 
     na, nb = cmp["name_a"], cmp["name_b"]
     region = args.region
+    tags = _load_tags()
+    has_tags = bool(tags.get(region))
     total = cmp["comp_total"]
     n_competitors = cmp["total_competitors"]
 
@@ -705,16 +756,21 @@ def cmd_compare(args: argparse.Namespace) -> None:
         t.add_column("Topped by peers", justify="right")
         t.add_column("Total peers", justify="right")
         t.add_column("Peer %", justify="right")
+        if has_tags:
+            t.add_column("Tags", style="dim")
         for _, row in df.iterrows():
             pct = row["topped_pct"]
             color = pct_color(pct)
-            t.add_row(
+            cells = [
                 row["gym"],
                 str(int(row["boulder"])),
                 str(int(row["topped_count"])),
                 str(int(row["total_peers"])),
                 f"[{color}]{pct:.1f}%[/{color}]",
-            )
+            ]
+            if has_tags:
+                cells.append(", ".join(_get_tags(tags, region, row["gym"], int(row["boulder"]))))
+            t.add_row(*cells)
         console.print(t)
 
     _print_exclusive(cmp["only_a"], na, nb)
@@ -774,19 +830,23 @@ def cmd_compare(args: argparse.Namespace) -> None:
     def _exclusive_html(df, owner: str, other: str) -> str:
         if df.empty:
             return f"<p class='none'>{owner} has no boulders that {other} hasn't also topped.</p>"
+        tag_th = "<th>Tags</th>" if has_tags else ""
         rows = []
         for _, row in df.iterrows():
             pct = row["topped_pct"]
             style = _pct_style(pct)
+            tag_list = _get_tags(tags, region, row["gym"], int(row["boulder"]))
+            tag_cell = f"<td style='color:#555'>{', '.join(tag_list)}</td>" if has_tags else ""
             rows.append(
                 f"<tr><td>{row['gym']}</td>"
                 f"<td>{int(row['boulder'])}</td>"
                 f"<td>{int(row['topped_count'])}&thinsp;/&thinsp;{int(row['total_peers'])}</td>"
-                f"<td style='{style};font-weight:bold'>{pct:.1f}%</td></tr>"
+                f"<td style='{style};font-weight:bold'>{pct:.1f}%</td>"
+                f"{tag_cell}</tr>"
             )
         return (
             f"<table>"
-            f"<thead><tr><th>Gym</th><th>Boulder</th><th>Peers topped</th><th>Peer %</th></tr></thead>"
+            f"<thead><tr><th>Gym</th><th>Boulder</th><th>Peers topped</th><th>Peer %</th>{tag_th}</tr></thead>"
             f"<tbody>{''.join(rows)}</tbody>"
             f"</table>"
         )
@@ -833,6 +893,64 @@ def cmd_compare(args: argparse.Namespace) -> None:
 
     out_path.write_text(html, encoding="utf-8")
     console.print(f"  Saved: [cyan]{out_path}[/cyan]")
+
+
+def cmd_tag(args: argparse.Namespace) -> None:
+    tags = _load_tags()
+    region = args.region
+
+    if args.gym is None:
+        # List all tagged boulders in the region
+        region_tags = tags.get(region, {})
+        if not region_tags:
+            console.print(f"[dim]No tags set for {region}.[/dim]")
+            return
+        t = Table(title=f"Tags — {region}", show_header=True, header_style="bold")
+        t.add_column("Gym")
+        t.add_column("Boulder", justify="right")
+        t.add_column("Tags")
+        for gym in sorted(region_tags):
+            for b_str, tag_list in sorted(region_tags[gym].items(), key=lambda x: int(x[0])):
+                if tag_list:
+                    t.add_row(gym, b_str, ", ".join(tag_list))
+        console.print(t)
+        return
+
+    if args.boulder is None:
+        console.print("[red]--boulder is required when --gym is specified.[/red]")
+        sys.exit(1)
+
+    gym = args.gym
+    boulder = str(args.boulder)
+
+    if args.clear:
+        found = False
+        if region in tags and gym in tags[region] and boulder in tags[region][gym]:
+            del tags[region][gym][boulder]
+            if not tags[region][gym]:
+                del tags[region][gym]
+            if not tags[region]:
+                del tags[region]
+            _save_tags(tags)
+            found = True
+        console.print(
+            f"[dim]Cleared tags for {gym} #{boulder}.[/dim]" if found
+            else f"[dim]{gym} #{boulder} had no tags.[/dim]"
+        )
+        return
+
+    if not args.tags:
+        current = _get_tags(tags, region, gym, args.boulder)
+        if current:
+            console.print(f"[bold]{gym} #{boulder}:[/bold] {', '.join(current)}")
+        else:
+            console.print(f"[dim]{gym} #{boulder}: no tags set[/dim]")
+        return
+
+    # Set tags (replaces existing)
+    tags.setdefault(region, {}).setdefault(gym, {})[boulder] = list(args.tags)
+    _save_tags(tags)
+    console.print(f"[green]Tagged {gym} #{boulder}:[/green] {', '.join(args.tags)}")
 
 
 def cmd_find(args: argparse.Namespace) -> None:
@@ -1167,6 +1285,22 @@ def main() -> None:
     )
     p_score.add_argument("--name", required=True, help="Exact competitor name")
     p_score.set_defaults(func=cmd_score)
+
+    # -- tag --
+    p_tag = sub.add_parser("tag", help="Set/view tags on boulders (hold colour, style, etc.)")
+    p_tag.add_argument(
+        "--region", choices=region_choices, default="Graz",
+        help="Region (default: Graz)",
+    )
+    p_tag.add_argument("--gym", default=None, metavar="GYM",
+        help="Gym name (required when tagging/viewing a specific boulder)")
+    p_tag.add_argument("--boulder", type=int, default=None, metavar="N",
+        help="Boulder number")
+    p_tag.add_argument("--clear", action="store_true",
+        help="Remove all tags from this boulder")
+    p_tag.add_argument("tags", nargs="*", metavar="TAG",
+        help="Tags to set, replacing existing ones (omit to view current tags)")
+    p_tag.set_defaults(func=cmd_tag)
 
     # -- compare --
     p_cmp = sub.add_parser("compare", help="Head-to-head comparison of two competitors")

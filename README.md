@@ -139,10 +139,12 @@ python main.py score --region Wien --name "Jesus Paulo"
 **Console sections:**
 - Overall: rank (N of M), score, max, %
 - Gym breakdown: topped / max, %, rank among that gym's visitors — plus a **Total** row with overall rank
-- Top 5 hardest boulders topped (peer completion % coloured red/yellow/green)
-- Topped boulder numbers per gym
+- Top 5 hardest boulders topped (peer completion % coloured red/yellow/green; tags column if any set)
+- Topped boulder numbers per gym (tags shown inline if any set)
 
-**HTML report** additionally shows a colour-coded boulder grid per gym (green = topped, grey = missed).
+**HTML report** additionally shows:
+- Top 5 hardest boulders topped table (colour-coded, tags column if any set)
+- Colour-coded boulder grid per gym (green = topped, grey = missed; tagged boulders have an orange dot and tooltip)
 
 Output: `data/score/<region>_<name>.html`
 
@@ -188,12 +190,44 @@ Output: terminal tables + `data/compare/<region>_<name_a>_vs_<name_b>.html`
 
 ---
 
+### `tag` — annotate boulders
+
+Attach free-form tags (hold colour, style, etc.) to individual boulders. Tags are stored in `data/tags.json` separately from scraped data and are reflected wherever specific boulders are listed (stats, recommend, score, compare).
+
+```bash
+# Set tags for a boulder (replaces any existing tags)
+python main.py tag --region Graz --gym "BLOC house" --boulder 5 Pink Overhanging
+
+# View current tags for a specific boulder
+python main.py tag --region Graz --gym "BLOC house" --boulder 5
+
+# List all tagged boulders in a region
+python main.py tag --region Graz
+
+# Remove all tags from a boulder
+python main.py tag --region Graz --gym "BLOC house" --boulder 5 --clear
+```
+
+Tags are shown as an extra column wherever boulders appear:
+
+| Command | Where tags appear |
+|---------|------------------|
+| `stats` | Boulder completion tables |
+| `recommend` | Untapped boulder list (console + HTML) |
+| `score` | Top-5 hardest table (console + HTML); boulder-per-gym list (console); boulder grid tooltip (HTML) |
+| `compare` | Exclusive boulder tables (console + HTML) |
+
+`data/tags.json` is **not** gitignored — it's user data and should be committed.
+
+---
+
 ## Output files
 
 ```
 data/
   latest_graz.json                    # most recent Graz scrape (gitignored)
   latest_wien.json                    # most recent Wien scrape (gitignored)
+  tags.json                           # boulder tags (tracked in git)
   participants/
     graz.html                         # participants report
   leaderboard/
@@ -206,7 +240,7 @@ data/
     graz_wurm_lisa_vs_muster_maria.html
 ```
 
-JSON files and all HTML output directories are gitignored. The `data/` directory is tracked via `.gitkeep`.
+JSON scrape files and all HTML output directories are gitignored. `data/tags.json` is tracked. The `data/` directory itself is tracked via `.gitkeep`.
 
 ---
 
