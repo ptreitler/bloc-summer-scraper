@@ -280,7 +280,7 @@ def leaderboard_summary(data: dict, top_n: int = 10) -> dict:
         ]
         for n_gyms in range(len(all_gyms) + 1):
             count = sum(1 for v in visit_counts if v == n_gyms)
-            if count > 0 or n_gyms == 0:
+            if count > 0:
                 visit_rows.append({
                     "class": cls_name,
                     "gyms_visited": n_gyms,
