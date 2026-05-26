@@ -4,3 +4,5 @@ lxml
 pandas
 matplotlib
 rich
+Flask>=3.0
+gunicorn>=22.0

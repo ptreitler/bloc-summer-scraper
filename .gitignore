@@ -1,4 +1,6 @@
 data/*.json
+!data/tags.json
+!data/latest_*.json
 data/*.png
 data/recommend/
 data/participants/
