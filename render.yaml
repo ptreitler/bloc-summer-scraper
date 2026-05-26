@@ -19,3 +19,5 @@ services:
         sync: false
       - key: GITHUB_REPO
         sync: false
+      - key: SCRAPE_SECRET
+        sync: false

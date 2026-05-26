@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, abort, jsonify, request
 
 from web.auth import require_admin
 
@@ -52,6 +52,78 @@ def _commit_tags_to_github(tags: dict) -> None:
         body["sha"] = sha
 
     req.put(url, headers=headers, json=body, timeout=10)
+
+
+def _commit_region_to_github(region: str) -> None:
+    """Commit one latest_<region>.json file to GitHub via the Contents API."""
+    import base64
+    from datetime import datetime, timezone
+
+    import requests as req
+
+    token = os.environ.get("GITHUB_TOKEN", "")
+    repo = os.environ.get("GITHUB_REPO", "")
+    if not token or not repo:
+        return
+
+    slug = region.lower().replace(" ", "_")
+    p = Path("data") / f"latest_{slug}.json"
+    if not p.exists():
+        return
+
+    url = f"https://api.github.com/repos/{repo}/contents/data/latest_{slug}.json"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    r = req.get(url, headers=headers, timeout=10)
+    sha = r.json().get("sha", "") if r.ok else ""
+
+    content = base64.b64encode(p.read_bytes()).decode()
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+    body: dict = {"message": f"chore: scrape {region} [{ts}]", "content": content}
+    if sha:
+        body["sha"] = sha
+
+    req.put(url, headers=headers, json=body, timeout=30)
+
+
+@bp.route("/admin/scrape-region", methods=["POST"])
+def scrape_region_api():
+    """Run the scraper for one region synchronously, then commit the result to GitHub.
+
+    Called by the GitHub Actions workflow via curl.  Auth is a shared Bearer token
+    stored in the SCRAPE_SECRET env var (not a user session).
+    """
+    secret = os.environ.get("SCRAPE_SECRET", "")
+    auth_header = request.headers.get("Authorization", "")
+    if not secret or auth_header != f"Bearer {secret}":
+        abort(401)
+
+    data = request.get_json(silent=True) or {}
+    region = data.get("region") or request.args.get("region", "")
+    if not region:
+        return jsonify({"ok": False, "error": "missing region"}), 400
+
+    import subprocess
+    import sys
+
+    app_root = str(Path(__file__).parent.parent.parent)
+    result = subprocess.run(
+        [sys.executable, "main.py", "scrape", "--region", region, "--force"],
+        cwd=app_root,
+        capture_output=True,
+        text=True,
+        timeout=600,
+    )
+
+    if result.returncode != 0:
+        return jsonify({"ok": False, "region": region, "error": result.stderr[-1000:]}), 500
+
+    _commit_region_to_github(region)
+    return jsonify({"ok": True, "region": region})
 
 
 @bp.route("/admin")

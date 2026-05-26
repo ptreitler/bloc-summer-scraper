@@ -9,27 +9,18 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_PAT }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Scrape all regions
+      - name: Scrape all regions via Render
+        env:
+          RENDER_URL: ${{ secrets.RENDER_URL }}
+          SCRAPE_SECRET: ${{ secrets.SCRAPE_SECRET }}
         run: |
           for REGION in "Graz" "Wien" "Kärnten" "Linz" "Murtal" "Salzburg" "Traunviertel"; do
-            python main.py scrape --region "$REGION" --force
+            echo "Scraping $REGION..."
+            curl -sf -X POST \
+              -H "Authorization: Bearer $SCRAPE_SECRET" \
+              -H "Content-Type: application/json" \
+              -d "{\"region\": \"$REGION\"}" \
+              --max-time 600 \
+              "$RENDER_URL/admin/scrape-region"
+            echo ""
           done
-
-      - name: Commit data
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/latest_*.json data/tags.json
-          git diff --staged --quiet || git commit -m "chore: scrape data [$(date -u +%Y-%m-%dT%H:%MZ)]"
-          git push
