@@ -113,20 +113,11 @@ def scrape_region_api():
     if not region:
         return jsonify({"ok": False, "error": "missing region"}), 400
 
-    import subprocess
-    import sys
-
-    app_root = str(Path(__file__).parent.parent.parent)
-    result = subprocess.run(
-        [sys.executable, "main.py", "scrape", "--region", region, "--force"],
-        cwd=app_root,
-        capture_output=True,
-        text=True,
-        timeout=600,
-    )
-
-    if result.returncode != 0:
-        return jsonify({"ok": False, "region": region, "error": result.stderr[-1000:]}), 500
+    try:
+        from scraper import scrape_all
+        scrape_all(region_name=region, force=True)
+    except Exception as exc:
+        return jsonify({"ok": False, "region": region, "error": str(exc)}), 500
 
     _commit_region_to_github(region)
     return jsonify({"ok": True, "region": region})
