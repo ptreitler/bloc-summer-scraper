@@ -16,7 +16,7 @@ jobs:
         run: |
           for REGION in "Graz" "Wien" "Kärnten" "Linz" "Murtal" "Salzburg" "Traunviertel"; do
             echo "Scraping $REGION..."
-            curl -sf -X POST \
+            curl -v --fail-with-body -X POST \
               -H "Authorization: Bearer $SCRAPE_SECRET" \
               -H "Content-Type: application/json" \
               -d "{\"region\": \"$REGION\"}" \

@@ -90,6 +90,12 @@ def _commit_region_to_github(region: str) -> None:
     req.put(url, headers=headers, json=body, timeout=30)
 
 
+@bp.route("/admin/ping")
+def ping():
+    """No-auth health check — verifies the blueprint is registered and routing works."""
+    return jsonify({"ok": True, "routes": [str(r) for r in bp.deferred_functions]})
+
+
 @bp.route("/admin/scrape-region", methods=["POST"])
 def scrape_region_api():
     """Run the scraper for one region synchronously, then commit the result to GitHub.
