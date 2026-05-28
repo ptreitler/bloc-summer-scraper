@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
+import threading
 from pathlib import Path
 
 from flask import Blueprint, Response, abort, jsonify, request
@@ -10,6 +12,9 @@ from flask import Blueprint, Response, abort, jsonify, request
 from web.auth import require_admin
 
 bp = Blueprint("admin", __name__)
+
+# In-memory scrape status (per worker process; good enough for monitoring)
+_scrape_status: dict[str, str] = {}
 
 TAGS_FILE = Path("data") / "tags.json"
 
@@ -92,16 +97,23 @@ def _commit_region_to_github(region: str) -> None:
 
 @bp.route("/admin/ping")
 def ping():
-    """No-auth health check — verifies the blueprint is registered and routing works."""
-    return jsonify({"ok": True, "routes": [str(r) for r in bp.deferred_functions]})
+    """No-auth health check."""
+    return jsonify({"ok": True})
+
+
+@bp.route("/admin/scrape-status")
+def scrape_status():
+    """No-auth endpoint returning the last known scrape result per region."""
+    return jsonify(_scrape_status)
 
 
 @bp.route("/admin/scrape-region", methods=["POST"])
 def scrape_region_api():
-    """Run the scraper for one region synchronously, then commit the result to GitHub.
+    """Start a background scrape for one region and return 200 immediately.
 
-    Called by the GitHub Actions workflow via curl.  Auth is a shared Bearer token
-    stored in the SCRAPE_SECRET env var (not a user session).
+    Running in a daemon thread avoids gunicorn worker-timeout (SIGABRT) on
+    long-running requests.  Called by the GitHub Actions workflow via curl.
+    Auth: Bearer token via SCRAPE_SECRET env var.
     """
     secret = os.environ.get("SCRAPE_SECRET", "")
     auth_header = request.headers.get("Authorization", "")
@@ -113,19 +125,21 @@ def scrape_region_api():
     if not region:
         return jsonify({"ok": False, "error": "missing region"}), 400
 
-    try:
-        from scraper import scrape_all
-        scrape_all(region_name=region, force=True)
-    except BaseException as exc:
-        return jsonify({"ok": False, "region": region, "stage": "scrape", "error": str(exc)}), 500
+    _scrape_status[region] = "running"
 
-    try:
-        _commit_region_to_github(region)
-    except BaseException as exc:
-        # Scrape succeeded but commit failed — still report what happened
-        return jsonify({"ok": False, "region": region, "stage": "commit", "error": str(exc)}), 500
+    def _run() -> None:
+        try:
+            from scraper import scrape_all
+            scrape_all(region_name=region, force=True)
+            _commit_region_to_github(region)
+            _scrape_status[region] = "ok"
+            logging.info("Scrape complete: %s", region)
+        except BaseException as exc:
+            _scrape_status[region] = f"error: {exc}"
+            logging.error("Scrape failed for %s: %s", region, exc, exc_info=True)
 
-    return jsonify({"ok": True, "region": region})
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"ok": True, "region": region, "status": "started"})
 
 
 @bp.route("/admin")

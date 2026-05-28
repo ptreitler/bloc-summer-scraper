@@ -9,18 +9,38 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
-      - name: Scrape all regions via Render
+      - name: Wake up Render (may be sleeping on free tier)
+        env:
+          RENDER_URL: ${{ secrets.RENDER_URL }}
+        run: |
+          echo "Pinging $RENDER_URL ..."
+          curl --retry 5 --retry-delay 15 --retry-all-errors -sf "$RENDER_URL/admin/ping"
+          echo "Render is up."
+
+      - name: Trigger scrapes (fire-and-forget, run in background on Render)
         env:
           RENDER_URL: ${{ secrets.RENDER_URL }}
           SCRAPE_SECRET: ${{ secrets.SCRAPE_SECRET }}
         run: |
           for REGION in "Graz" "Wien" "Kärnten" "Linz" "Murtal" "Salzburg" "Traunviertel"; do
-            echo "Scraping $REGION..."
-            curl -v --fail-with-body -X POST \
+            echo "Triggering scrape for $REGION..."
+            curl --fail-with-body -X POST \
               -H "Authorization: Bearer $SCRAPE_SECRET" \
               -H "Content-Type: application/json" \
               -d "{\"region\": \"$REGION\"}" \
-              --max-time 600 \
+              --max-time 30 \
               "$RENDER_URL/admin/scrape-region"
             echo ""
           done
+
+      - name: Wait for background scrapes to complete
+        run: |
+          echo "Waiting 10 minutes for all region scrapes to finish..."
+          sleep 600
+
+      - name: Check scrape status
+        env:
+          RENDER_URL: ${{ secrets.RENDER_URL }}
+        run: |
+          echo "Final scrape status:"
+          curl -sf "$RENDER_URL/admin/scrape-status"
