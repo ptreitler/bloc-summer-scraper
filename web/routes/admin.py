@@ -116,10 +116,15 @@ def scrape_region_api():
     try:
         from scraper import scrape_all
         scrape_all(region_name=region, force=True)
-    except Exception as exc:
-        return jsonify({"ok": False, "region": region, "error": str(exc)}), 500
+    except BaseException as exc:
+        return jsonify({"ok": False, "region": region, "stage": "scrape", "error": str(exc)}), 500
 
-    _commit_region_to_github(region)
+    try:
+        _commit_region_to_github(region)
+    except BaseException as exc:
+        # Scrape succeeded but commit failed — still report what happened
+        return jsonify({"ok": False, "region": region, "stage": "commit", "error": str(exc)}), 500
+
     return jsonify({"ok": True, "region": region})
 
 
