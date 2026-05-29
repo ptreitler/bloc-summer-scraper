@@ -1,0 +1,23 @@
+{
+  "scraped_at": "2026-05-29T03:02:08.548767+00:00",
+  "competition": {
+    "c": 190,
+    "v": 198
+  },
+  "region": {
+    "id": 245,
+    "name": "Kärnten"
+  },
+  "classes": [
+    {
+      "id": 686,
+      "name": "Männer",
+      "competitors": []
+    },
+    {
+      "id": 687,
+      "name": "Frauen",
+      "competitors": []
+    }
+  ]
+}
