@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-05-29T03:02:09.149074+00:00",
+  "scraped_at": "2026-05-30T03:01:28.329369+00:00",
   "competition": {
     "c": 190,
     "v": 198
@@ -572,9 +572,102 @@
           }
         },
         {
+          "id": 2306,
+          "name": "Peinhaupt Marcel",
+          "rank": 7,
+          "score": 65,
+          "total": 80,
+          "boulders": {
+            "Bloc Spot": [
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true
+            ],
+            "Newton": [
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 2370,
           "name": "Erlbacher Markus",
-          "rank": 7,
+          "rank": 8,
           "score": 64,
           "total": 80,
           "boulders": {
@@ -667,7 +760,7 @@
         {
           "id": 2061,
           "name": "Koenigshofer Benjamin",
-          "rank": 7,
+          "rank": 8,
           "score": 64,
           "total": 80,
           "boulders": {
@@ -758,10 +851,10 @@
           }
         },
         {
-          "id": 2306,
-          "name": "Peinhaupt Marcel",
-          "rank": 7,
-          "score": 64,
+          "id": 12288,
+          "name": "Reischl Marcel",
+          "rank": 10,
+          "score": 63,
           "total": 80,
           "boulders": {
             "Bloc Spot": [
@@ -779,6 +872,8 @@
               true,
               true,
               true,
+              true,
+              false,
               false,
               true,
               true,
@@ -786,11 +881,9 @@
               true,
               true,
               true,
-              true,
-              true,
               false,
               true,
-              true,
+              false,
               true,
               true,
               true,
@@ -808,7 +901,7 @@
             ],
             "Newton": [
               false,
-              false,
+              true,
               true,
               true,
               true,
@@ -853,7 +946,7 @@
         {
           "id": 4578,
           "name": "Schlagbauer Dominik",
-          "rank": 10,
+          "rank": 11,
           "score": 60,
           "total": 80,
           "boulders": {
@@ -946,7 +1039,7 @@
         {
           "id": 1991,
           "name": "Wiesenhofer Philipp",
-          "rank": 11,
+          "rank": 12,
           "score": 57,
           "total": 80,
           "boulders": {
@@ -1039,7 +1132,7 @@
         {
           "id": 12648,
           "name": "IRIE",
-          "rank": 12,
+          "rank": 13,
           "score": 54,
           "total": 80,
           "boulders": {
@@ -1132,7 +1225,7 @@
         {
           "id": 3378,
           "name": "Schauer Stefan",
-          "rank": 13,
+          "rank": 14,
           "score": 52,
           "total": 80,
           "boulders": {
@@ -1225,7 +1318,7 @@
         {
           "id": 2119,
           "name": "Dobnigg Stefan",
-          "rank": 14,
+          "rank": 15,
           "score": 50,
           "total": 80,
           "boulders": {
@@ -1318,7 +1411,7 @@
         {
           "id": 8528,
           "name": "Matouschek Philipp",
-          "rank": 14,
+          "rank": 15,
           "score": 50,
           "total": 80,
           "boulders": {
@@ -1411,7 +1504,7 @@
         {
           "id": 12576,
           "name": "Raffler Philipp",
-          "rank": 14,
+          "rank": 15,
           "score": 50,
           "total": 80,
           "boulders": {
@@ -1504,7 +1597,7 @@
         {
           "id": 9131,
           "name": "Holz Lukas",
-          "rank": 17,
+          "rank": 18,
           "score": 49,
           "total": 80,
           "boulders": {
@@ -1597,7 +1690,7 @@
         {
           "id": 3033,
           "name": "Pichler Mario",
-          "rank": 17,
+          "rank": 18,
           "score": 49,
           "total": 80,
           "boulders": {
@@ -1690,7 +1783,7 @@
         {
           "id": 3271,
           "name": "Schwaiger Florian",
-          "rank": 17,
+          "rank": 18,
           "score": 49,
           "total": 80,
           "boulders": {
@@ -1783,7 +1876,7 @@
         {
           "id": 8480,
           "name": "Pichler Oliver",
-          "rank": 20,
+          "rank": 21,
           "score": 46,
           "total": 80,
           "boulders": {
@@ -1876,7 +1969,7 @@
         {
           "id": 4516,
           "name": "Höfer Robert",
-          "rank": 21,
+          "rank": 22,
           "score": 43,
           "total": 80,
           "boulders": {
@@ -1969,7 +2062,7 @@
         {
           "id": 4317,
           "name": "Steinwender Patrick",
-          "rank": 21,
+          "rank": 22,
           "score": 43,
           "total": 80,
           "boulders": {
@@ -2062,7 +2155,7 @@
         {
           "id": 12133,
           "name": "Poms Florian",
-          "rank": 23,
+          "rank": 24,
           "score": 41,
           "total": 80,
           "boulders": {
@@ -2153,9 +2246,102 @@
           }
         },
         {
+          "id": 2296,
+          "name": "Steiner Wolfgang",
+          "rank": 24,
+          "score": 41,
+          "total": 80,
+          "boulders": {
+            "Bloc Spot": [
+              true,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              false,
+              true,
+              false
+            ],
+            "Newton": [
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 4550,
           "name": "Katzlberger Robin",
-          "rank": 24,
+          "rank": 26,
           "score": 38,
           "total": 80,
           "boulders": {
@@ -2248,7 +2434,7 @@
         {
           "id": 3709,
           "name": "Magerl Roland",
-          "rank": 25,
+          "rank": 27,
           "score": 37,
           "total": 80,
           "boulders": {
@@ -2341,7 +2527,7 @@
         {
           "id": 5035,
           "name": "Kreuzer Andreas",
-          "rank": 26,
+          "rank": 28,
           "score": 36,
           "total": 80,
           "boulders": {
@@ -2434,7 +2620,7 @@
         {
           "id": 10193,
           "name": "Berger Manuel",
-          "rank": 27,
+          "rank": 29,
           "score": 35,
           "total": 80,
           "boulders": {
@@ -2527,7 +2713,7 @@
         {
           "id": 12843,
           "name": "Koller Matthias",
-          "rank": 28,
+          "rank": 30,
           "score": 33,
           "total": 80,
           "boulders": {
@@ -2620,7 +2806,7 @@
         {
           "id": 10279,
           "name": "Riegler Manuel",
-          "rank": 29,
+          "rank": 31,
           "score": 28,
           "total": 80,
           "boulders": {
@@ -2713,7 +2899,7 @@
         {
           "id": 9794,
           "name": "Führer Christoph",
-          "rank": 30,
+          "rank": 32,
           "score": 27,
           "total": 80,
           "boulders": {
@@ -2806,7 +2992,7 @@
         {
           "id": 4555,
           "name": "Katzlberger Jürgen",
-          "rank": 30,
+          "rank": 32,
           "score": 27,
           "total": 80,
           "boulders": {
@@ -2899,7 +3085,7 @@
         {
           "id": 10281,
           "name": "Walch David",
-          "rank": 30,
+          "rank": 32,
           "score": 27,
           "total": 80,
           "boulders": {
@@ -2992,7 +3178,7 @@
         {
           "id": 4899,
           "name": "Hinteregger Jan",
-          "rank": 33,
+          "rank": 35,
           "score": 26,
           "total": 80,
           "boulders": {
@@ -3085,7 +3271,7 @@
         {
           "id": 10549,
           "name": "Kellerer-Pirklbauer Andreas",
-          "rank": 34,
+          "rank": 36,
           "score": 23,
           "total": 80,
           "boulders": {
@@ -3178,7 +3364,7 @@
         {
           "id": 5033,
           "name": "Pichler Patrick",
-          "rank": 35,
+          "rank": 37,
           "score": 22,
           "total": 80,
           "boulders": {
@@ -3271,7 +3457,7 @@
         {
           "id": 8545,
           "name": "Pachernegg Nico",
-          "rank": 36,
+          "rank": 38,
           "score": 21,
           "total": 80,
           "boulders": {
@@ -3364,7 +3550,7 @@
         {
           "id": 8754,
           "name": "Tockner Johann",
-          "rank": 36,
+          "rank": 38,
           "score": 21,
           "total": 80,
           "boulders": {
@@ -3457,7 +3643,7 @@
         {
           "id": 9470,
           "name": "Leitner Christian",
-          "rank": 38,
+          "rank": 40,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -3528,99 +3714,6 @@
               false,
               false,
               false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false
-            ]
-          }
-        },
-        {
-          "id": 2296,
-          "name": "Steiner Wolfgang",
-          "rank": 38,
-          "score": 20,
-          "total": 80,
-          "boulders": {
-            "Bloc Spot": [
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false
-            ],
-            "Newton": [
-              false,
-              false,
-              false,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              false,
-              true,
-              true,
               false,
               false,
               false,
@@ -3643,7 +3736,7 @@
         {
           "id": 12602,
           "name": "Shefart",
-          "rank": 40,
+          "rank": 41,
           "score": 18,
           "total": 80,
           "boulders": {
@@ -3736,7 +3829,7 @@
         {
           "id": 12210,
           "name": "007",
-          "rank": 41,
+          "rank": 42,
           "score": 17,
           "total": 80,
           "boulders": {
@@ -3829,7 +3922,7 @@
         {
           "id": 5140,
           "name": "Piller Michael",
-          "rank": 41,
+          "rank": 42,
           "score": 17,
           "total": 80,
           "boulders": {
@@ -3922,7 +4015,7 @@
         {
           "id": 5063,
           "name": "Bauer Stefan",
-          "rank": 43,
+          "rank": 44,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -4015,7 +4108,7 @@
         {
           "id": 4496,
           "name": "Grüner Andreas",
-          "rank": 43,
+          "rank": 44,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -4108,7 +4201,7 @@
         {
           "id": 4817,
           "name": "Haas-Vogl Heiko",
-          "rank": 43,
+          "rank": 44,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -4201,7 +4294,7 @@
         {
           "id": 12416,
           "name": "Köck Peter",
-          "rank": 43,
+          "rank": 44,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -4294,7 +4387,7 @@
         {
           "id": 12072,
           "name": "Highflyer_8107",
-          "rank": 43,
+          "rank": 44,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -4387,7 +4480,7 @@
         {
           "id": 8619,
           "name": "Egger Nico",
-          "rank": 48,
+          "rank": 49,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -4480,7 +4573,7 @@
         {
           "id": 8751,
           "name": "Hulla Paul",
-          "rank": 48,
+          "rank": 49,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -4573,7 +4666,7 @@
         {
           "id": 12255,
           "name": "PetCue",
-          "rank": 48,
+          "rank": 49,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -4666,7 +4759,7 @@
         {
           "id": 10197,
           "name": "Reiter Sebastian",
-          "rank": 48,
+          "rank": 49,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -4759,7 +4852,7 @@
         {
           "id": 12650,
           "name": "Fingerlos Sebastian",
-          "rank": 52,
+          "rank": 53,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -4852,7 +4945,7 @@
         {
           "id": 8978,
           "name": "aloa17",
-          "rank": 52,
+          "rank": 53,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -4945,7 +5038,7 @@
         {
           "id": 2164,
           "name": "Madl Florian",
-          "rank": 54,
+          "rank": 55,
           "score": 13,
           "total": 80,
           "boulders": {
@@ -5038,7 +5131,7 @@
         {
           "id": 12496,
           "name": "Reini16",
-          "rank": 54,
+          "rank": 55,
           "score": 13,
           "total": 80,
           "boulders": {
@@ -5131,7 +5224,7 @@
         {
           "id": 12473,
           "name": "jasonsn05",
-          "rank": 56,
+          "rank": 57,
           "score": 9,
           "total": 80,
           "boulders": {
@@ -5224,7 +5317,7 @@
         {
           "id": 9899,
           "name": "Morgenbesser Stefan",
-          "rank": 57,
+          "rank": 58,
           "score": 8,
           "total": 80,
           "boulders": {
@@ -7088,9 +7181,102 @@
           }
         },
         {
+          "id": 2480,
+          "name": "Steiner Tanja",
+          "rank": 20,
+          "score": 25,
+          "total": 80,
+          "boulders": {
+            "Bloc Spot": [
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              false,
+              true,
+              false
+            ],
+            "Newton": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 4238,
           "name": "Puster Lisa",
-          "rank": 20,
+          "rank": 21,
           "score": 24,
           "total": 80,
           "boulders": {
@@ -7183,7 +7369,7 @@
         {
           "id": 1976,
           "name": "Kroisenbrunner Alina",
-          "rank": 21,
+          "rank": 22,
           "score": 21,
           "total": 80,
           "boulders": {
@@ -7274,9 +7460,102 @@
           }
         },
         {
+          "id": 5588,
+          "name": "Krammer Anna",
+          "rank": 23,
+          "score": 20,
+          "total": 80,
+          "boulders": {
+            "Bloc Spot": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ],
+            "Newton": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 12891,
           "name": "Leinzi",
-          "rank": 22,
+          "rank": 24,
           "score": 19,
           "total": 80,
           "boulders": {
@@ -7369,7 +7648,7 @@
         {
           "id": 12759,
           "name": "Marchl Silvia",
-          "rank": 23,
+          "rank": 25,
           "score": 17,
           "total": 80,
           "boulders": {
@@ -7462,7 +7741,7 @@
         {
           "id": 9718,
           "name": "Pendl Elisabeth",
-          "rank": 24,
+          "rank": 26,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -7555,7 +7834,7 @@
         {
           "id": 5811,
           "name": "Schurian Katrin",
-          "rank": 24,
+          "rank": 26,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -7648,7 +7927,7 @@
         {
           "id": 8977,
           "name": "Schnedl Nadja",
-          "rank": 26,
+          "rank": 28,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -7741,7 +8020,7 @@
         {
           "id": 12116,
           "name": "Kirby",
-          "rank": 26,
+          "rank": 28,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -7834,7 +8113,7 @@
         {
           "id": 12253,
           "name": "Hulla Maria",
-          "rank": 28,
+          "rank": 30,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -7927,7 +8206,7 @@
         {
           "id": 12564,
           "name": "Leo Conny",
-          "rank": 28,
+          "rank": 30,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -8020,7 +8299,7 @@
         {
           "id": 12073,
           "name": "Mi-Shelly",
-          "rank": 28,
+          "rank": 30,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -8111,10 +8390,10 @@
           }
         },
         {
-          "id": 2480,
-          "name": "Steiner Tanja",
-          "rank": 31,
-          "score": 13,
+          "id": 2724,
+          "name": "Cero Karin",
+          "rank": 33,
+          "score": 12,
           "total": 80,
           "boulders": {
             "Bloc Spot": [
@@ -8169,18 +8448,18 @@
               false,
               true,
               true,
-              true,
-              true,
-              true,
               false,
               true,
               true,
               true,
               true,
               true,
+              true,
+              true,
+              true,
               false,
               true,
-              true,
+              false,
               false,
               false,
               false,
@@ -8206,7 +8485,7 @@
         {
           "id": 4848,
           "name": "Luef Doris",
-          "rank": 32,
+          "rank": 33,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -8299,7 +8578,7 @@
         {
           "id": 9538,
           "name": "Gerold Julia",
-          "rank": 33,
+          "rank": 35,
           "score": 11,
           "total": 80,
           "boulders": {
@@ -8392,7 +8671,7 @@
         {
           "id": 12287,
           "name": "Katzlberger Jana",
-          "rank": 34,
+          "rank": 36,
           "score": 10,
           "total": 80,
           "boulders": {
@@ -8485,7 +8764,7 @@
         {
           "id": 5061,
           "name": "Meier Susanne",
-          "rank": 35,
+          "rank": 37,
           "score": 5,
           "total": 80,
           "boulders": {
@@ -8578,7 +8857,7 @@
         {
           "id": 12588,
           "name": "Tini1",
-          "rank": 36,
+          "rank": 38,
           "score": 3,
           "total": 80,
           "boulders": {
@@ -8671,7 +8950,7 @@
         {
           "id": 3568,
           "name": "Mohr Andrea",
-          "rank": 36,
+          "rank": 38,
           "score": 3,
           "total": 80,
           "boulders": {
@@ -8764,7 +9043,7 @@
         {
           "id": 4969,
           "name": "Salzmann Sonja",
-          "rank": 36,
+          "rank": 38,
           "score": 3,
           "total": 80,
           "boulders": {
