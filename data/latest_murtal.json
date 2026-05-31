@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-05-30T03:01:28.329369+00:00",
+  "scraped_at": "2026-05-31T03:03:02.186507+00:00",
   "competition": {
     "c": 190,
     "v": 198
@@ -6251,9 +6251,102 @@
           }
         },
         {
+          "id": 4861,
+          "name": "Fehringer Stefanie",
+          "rank": 10,
+          "score": 40,
+          "total": 80,
+          "boulders": {
+            "Bloc Spot": [
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false
+            ],
+            "Newton": [
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 2996,
           "name": "Schlacher Sabrina",
-          "rank": 10,
+          "rank": 11,
           "score": 32,
           "total": 80,
           "boulders": {
@@ -6346,7 +6439,7 @@
         {
           "id": 4750,
           "name": "Fasch Julia",
-          "rank": 11,
+          "rank": 12,
           "score": 31,
           "total": 80,
           "boulders": {
@@ -6439,7 +6532,7 @@
         {
           "id": 3694,
           "name": "moitzi11",
-          "rank": 11,
+          "rank": 12,
           "score": 31,
           "total": 80,
           "boulders": {
@@ -6532,7 +6625,7 @@
         {
           "id": 5824,
           "name": "Oberdünhofen Judith",
-          "rank": 11,
+          "rank": 12,
           "score": 31,
           "total": 80,
           "boulders": {
@@ -6625,7 +6718,7 @@
         {
           "id": 12558,
           "name": "Hanny03803",
-          "rank": 14,
+          "rank": 15,
           "score": 30,
           "total": 80,
           "boulders": {
@@ -6718,7 +6811,7 @@
         {
           "id": 3494,
           "name": "Dobnigg Sylvia",
-          "rank": 15,
+          "rank": 16,
           "score": 29,
           "total": 80,
           "boulders": {
@@ -6811,7 +6904,7 @@
         {
           "id": 5785,
           "name": "Schröck Lisa-Marie",
-          "rank": 15,
+          "rank": 16,
           "score": 29,
           "total": 80,
           "boulders": {
@@ -6904,7 +6997,7 @@
         {
           "id": 10075,
           "name": "Seidl Sandra",
-          "rank": 15,
+          "rank": 16,
           "score": 29,
           "total": 80,
           "boulders": {
@@ -6997,7 +7090,7 @@
         {
           "id": 2017,
           "name": "Brachmayer Verena",
-          "rank": 18,
+          "rank": 19,
           "score": 26,
           "total": 80,
           "boulders": {
@@ -7090,7 +7183,7 @@
         {
           "id": 2155,
           "name": "Reiter Hemma",
-          "rank": 18,
+          "rank": 19,
           "score": 26,
           "total": 80,
           "boulders": {
@@ -7183,7 +7276,7 @@
         {
           "id": 2480,
           "name": "Steiner Tanja",
-          "rank": 20,
+          "rank": 21,
           "score": 25,
           "total": 80,
           "boulders": {
@@ -7276,7 +7369,7 @@
         {
           "id": 4238,
           "name": "Puster Lisa",
-          "rank": 21,
+          "rank": 22,
           "score": 24,
           "total": 80,
           "boulders": {
@@ -7369,7 +7462,7 @@
         {
           "id": 1976,
           "name": "Kroisenbrunner Alina",
-          "rank": 22,
+          "rank": 23,
           "score": 21,
           "total": 80,
           "boulders": {
@@ -7462,7 +7555,7 @@
         {
           "id": 5588,
           "name": "Krammer Anna",
-          "rank": 23,
+          "rank": 24,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -7555,7 +7648,7 @@
         {
           "id": 12891,
           "name": "Leinzi",
-          "rank": 24,
+          "rank": 25,
           "score": 19,
           "total": 80,
           "boulders": {
@@ -7648,7 +7741,7 @@
         {
           "id": 12759,
           "name": "Marchl Silvia",
-          "rank": 25,
+          "rank": 26,
           "score": 17,
           "total": 80,
           "boulders": {
@@ -7741,7 +7834,7 @@
         {
           "id": 9718,
           "name": "Pendl Elisabeth",
-          "rank": 26,
+          "rank": 27,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -7834,7 +7927,7 @@
         {
           "id": 5811,
           "name": "Schurian Katrin",
-          "rank": 26,
+          "rank": 27,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -7927,7 +8020,7 @@
         {
           "id": 8977,
           "name": "Schnedl Nadja",
-          "rank": 28,
+          "rank": 29,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -8020,7 +8113,7 @@
         {
           "id": 12116,
           "name": "Kirby",
-          "rank": 28,
+          "rank": 29,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -8113,7 +8206,7 @@
         {
           "id": 12253,
           "name": "Hulla Maria",
-          "rank": 30,
+          "rank": 31,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -8206,7 +8299,7 @@
         {
           "id": 12564,
           "name": "Leo Conny",
-          "rank": 30,
+          "rank": 31,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -8299,7 +8392,7 @@
         {
           "id": 12073,
           "name": "Mi-Shelly",
-          "rank": 30,
+          "rank": 31,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -8392,7 +8485,7 @@
         {
           "id": 2724,
           "name": "Cero Karin",
-          "rank": 33,
+          "rank": 34,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -8485,7 +8578,7 @@
         {
           "id": 4848,
           "name": "Luef Doris",
-          "rank": 33,
+          "rank": 34,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -8578,7 +8671,7 @@
         {
           "id": 9538,
           "name": "Gerold Julia",
-          "rank": 35,
+          "rank": 36,
           "score": 11,
           "total": 80,
           "boulders": {
@@ -8671,7 +8764,7 @@
         {
           "id": 12287,
           "name": "Katzlberger Jana",
-          "rank": 36,
+          "rank": 37,
           "score": 10,
           "total": 80,
           "boulders": {
@@ -8764,7 +8857,7 @@
         {
           "id": 5061,
           "name": "Meier Susanne",
-          "rank": 37,
+          "rank": 38,
           "score": 5,
           "total": 80,
           "boulders": {
@@ -8857,7 +8950,7 @@
         {
           "id": 12588,
           "name": "Tini1",
-          "rank": 38,
+          "rank": 39,
           "score": 3,
           "total": 80,
           "boulders": {
@@ -8950,7 +9043,7 @@
         {
           "id": 3568,
           "name": "Mohr Andrea",
-          "rank": 38,
+          "rank": 39,
           "score": 3,
           "total": 80,
           "boulders": {
@@ -9043,7 +9136,7 @@
         {
           "id": 4969,
           "name": "Salzmann Sonja",
-          "rank": 38,
+          "rank": 39,
           "score": 3,
           "total": 80,
           "boulders": {
