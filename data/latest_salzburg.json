@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-05-31T03:03:02.406075+00:00",
+  "scraped_at": "2026-06-01T03:03:11.584736+00:00",
   "competition": {
     "c": 190,
     "v": 198
@@ -1784,7 +1784,7 @@
           "id": 2001,
           "name": "Frank Flangert",
           "rank": 20,
-          "score": 59,
+          "score": 61,
           "total": 80,
           "boulders": {
             "Boulderbar Salzburg": [
@@ -1792,22 +1792,7 @@
               false,
               true,
               true,
-              false,
               true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              false,
-              false,
-              false,
-              true,
-              false,
               true,
               true,
               true,
@@ -1819,13 +1804,28 @@
               true,
               true,
               false,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
               true,
               true,
               false,
               false,
               false,
               true,
-              false,
+              true,
               false,
               false
             ],
@@ -1967,9 +1967,102 @@
           }
         },
         {
+          "id": 13046,
+          "name": "Pirchner Felix",
+          "rank": 22,
+          "score": 56,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 3452,
           "name": "Kalakovic Viktor",
-          "rank": 22,
+          "rank": 23,
           "score": 55,
           "total": 80,
           "boulders": {
@@ -2062,7 +2155,7 @@
         {
           "id": 8531,
           "name": "MarioB",
-          "rank": 23,
+          "rank": 24,
           "score": 51,
           "total": 80,
           "boulders": {
@@ -2153,9 +2246,102 @@
           }
         },
         {
+          "id": 13031,
+          "name": "Edeneicher Robert",
+          "rank": 24,
+          "score": 51,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              true,
+              false,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 12952,
           "name": "Wallinger Christian",
-          "rank": 24,
+          "rank": 26,
           "score": 49,
           "total": 80,
           "boulders": {
@@ -2248,7 +2434,7 @@
         {
           "id": 2836,
           "name": "Winter Florian",
-          "rank": 24,
+          "rank": 26,
           "score": 49,
           "total": 80,
           "boulders": {
@@ -2341,7 +2527,7 @@
         {
           "id": 4207,
           "name": "Maislinger Franz Felix",
-          "rank": 26,
+          "rank": 28,
           "score": 48,
           "total": 80,
           "boulders": {
@@ -2434,7 +2620,7 @@
         {
           "id": 4808,
           "name": "Pühringer Micha",
-          "rank": 26,
+          "rank": 28,
           "score": 48,
           "total": 80,
           "boulders": {
@@ -2525,9 +2711,102 @@
           }
         },
         {
+          "id": 9505,
+          "name": "Breitenthaler Tobias",
+          "rank": 30,
+          "score": 46,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 12829,
           "name": "Schmied Stefan",
-          "rank": 28,
+          "rank": 30,
           "score": 46,
           "total": 80,
           "boulders": {
@@ -2620,7 +2899,7 @@
         {
           "id": 2289,
           "name": "Vasold Christian",
-          "rank": 29,
+          "rank": 32,
           "score": 45,
           "total": 80,
           "boulders": {
@@ -2713,7 +2992,7 @@
         {
           "id": 3417,
           "name": "Artner Christoph",
-          "rank": 30,
+          "rank": 33,
           "score": 44,
           "total": 80,
           "boulders": {
@@ -2806,7 +3085,7 @@
         {
           "id": 5301,
           "name": "Steinmaßl Markus",
-          "rank": 30,
+          "rank": 33,
           "score": 44,
           "total": 80,
           "boulders": {
@@ -2897,102 +3176,9 @@
           }
         },
         {
-          "id": 9505,
-          "name": "Breitenthaler Tobias",
-          "rank": 32,
-          "score": 42,
-          "total": 80,
-          "boulders": {
-            "Boulderbar Salzburg": [
-              true,
-              false,
-              true,
-              true,
-              false,
-              false,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              false,
-              false,
-              false,
-              true,
-              false,
-              false,
-              true,
-              false,
-              true,
-              true,
-              true,
-              false,
-              true,
-              true,
-              true,
-              false,
-              true,
-              false,
-              false,
-              false,
-              false,
-              true,
-              false,
-              false,
-              false
-            ],
-            "Kletterhalle Slzbg": [
-              true,
-              true,
-              true,
-              true,
-              true,
-              false,
-              false,
-              true,
-              false,
-              false,
-              true,
-              false,
-              true,
-              true,
-              false,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              true,
-              false,
-              false,
-              true,
-              false,
-              false,
-              true,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false,
-              false
-            ]
-          }
-        },
-        {
           "id": 12885,
           "name": "AndiS",
-          "rank": 32,
+          "rank": 35,
           "score": 42,
           "total": 80,
           "boulders": {
@@ -3085,7 +3271,7 @@
         {
           "id": 12266,
           "name": "Wirthenstätter Gerald",
-          "rank": 34,
+          "rank": 36,
           "score": 41,
           "total": 80,
           "boulders": {
@@ -3178,7 +3364,7 @@
         {
           "id": 12056,
           "name": "Aschenberger Jussa",
-          "rank": 35,
+          "rank": 37,
           "score": 38,
           "total": 80,
           "boulders": {
@@ -3271,7 +3457,7 @@
         {
           "id": 12185,
           "name": "Burgstaller Simon",
-          "rank": 35,
+          "rank": 37,
           "score": 38,
           "total": 80,
           "boulders": {
@@ -3364,7 +3550,7 @@
         {
           "id": 5418,
           "name": "Fink Robert",
-          "rank": 35,
+          "rank": 37,
           "score": 38,
           "total": 80,
           "boulders": {
@@ -3457,7 +3643,7 @@
         {
           "id": 9069,
           "name": "GerLee",
-          "rank": 35,
+          "rank": 37,
           "score": 38,
           "total": 80,
           "boulders": {
@@ -3550,7 +3736,7 @@
         {
           "id": 9832,
           "name": "Schilling Steven",
-          "rank": 39,
+          "rank": 41,
           "score": 37,
           "total": 80,
           "boulders": {
@@ -3643,7 +3829,7 @@
         {
           "id": 12607,
           "name": "JakobM!",
-          "rank": 40,
+          "rank": 42,
           "score": 36,
           "total": 80,
           "boulders": {
@@ -3736,7 +3922,7 @@
         {
           "id": 12738,
           "name": "Fuxii",
-          "rank": 41,
+          "rank": 43,
           "score": 35,
           "total": 80,
           "boulders": {
@@ -3829,7 +4015,7 @@
         {
           "id": 2880,
           "name": "Groesswang Felix",
-          "rank": 42,
+          "rank": 44,
           "score": 34,
           "total": 80,
           "boulders": {
@@ -3922,7 +4108,7 @@
         {
           "id": 5626,
           "name": "Schrattenecker Alexander",
-          "rank": 43,
+          "rank": 45,
           "score": 33,
           "total": 80,
           "boulders": {
@@ -4015,7 +4201,7 @@
         {
           "id": 12224,
           "name": "Ramses",
-          "rank": 44,
+          "rank": 46,
           "score": 31,
           "total": 80,
           "boulders": {
@@ -4108,7 +4294,7 @@
         {
           "id": 12392,
           "name": "s1",
-          "rank": 44,
+          "rank": 46,
           "score": 31,
           "total": 80,
           "boulders": {
@@ -4201,7 +4387,7 @@
         {
           "id": 2274,
           "name": "Seeleitner Christian",
-          "rank": 46,
+          "rank": 48,
           "score": 30,
           "total": 80,
           "boulders": {
@@ -4294,7 +4480,7 @@
         {
           "id": 12105,
           "name": "Haider Chandra",
-          "rank": 47,
+          "rank": 49,
           "score": 27,
           "total": 80,
           "boulders": {
@@ -4387,7 +4573,7 @@
         {
           "id": 8672,
           "name": "Rupi",
-          "rank": 47,
+          "rank": 49,
           "score": 27,
           "total": 80,
           "boulders": {
@@ -4480,7 +4666,7 @@
         {
           "id": 4757,
           "name": "Viehhauser Robert",
-          "rank": 47,
+          "rank": 49,
           "score": 27,
           "total": 80,
           "boulders": {
@@ -4573,7 +4759,7 @@
         {
           "id": 2569,
           "name": "Augustin Thomas",
-          "rank": 50,
+          "rank": 52,
           "score": 24,
           "total": 80,
           "boulders": {
@@ -4666,7 +4852,7 @@
         {
           "id": 12205,
           "name": "Basti04",
-          "rank": 50,
+          "rank": 52,
           "score": 24,
           "total": 80,
           "boulders": {
@@ -4759,7 +4945,7 @@
         {
           "id": 10493,
           "name": "Lex Vinzenz",
-          "rank": 50,
+          "rank": 52,
           "score": 24,
           "total": 80,
           "boulders": {
@@ -4852,7 +5038,7 @@
         {
           "id": 12188,
           "name": "Rahm Manuel",
-          "rank": 53,
+          "rank": 55,
           "score": 23,
           "total": 80,
           "boulders": {
@@ -4945,7 +5131,7 @@
         {
           "id": 12118,
           "name": "GottWorth Andrew",
-          "rank": 54,
+          "rank": 56,
           "score": 22,
           "total": 80,
           "boulders": {
@@ -5038,7 +5224,7 @@
         {
           "id": 4120,
           "name": "Schmied Manuel",
-          "rank": 54,
+          "rank": 56,
           "score": 22,
           "total": 80,
           "boulders": {
@@ -5131,7 +5317,7 @@
         {
           "id": 12290,
           "name": "Edi666",
-          "rank": 56,
+          "rank": 58,
           "score": 21,
           "total": 80,
           "boulders": {
@@ -5224,7 +5410,7 @@
         {
           "id": 12307,
           "name": "IgorEichinger",
-          "rank": 57,
+          "rank": 59,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -5317,7 +5503,7 @@
         {
           "id": 10091,
           "name": "Germadnik Marco",
-          "rank": 57,
+          "rank": 59,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -5410,7 +5596,7 @@
         {
           "id": 12548,
           "name": "Greg",
-          "rank": 57,
+          "rank": 59,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -5503,7 +5689,7 @@
         {
           "id": 9323,
           "name": "Koch Florian",
-          "rank": 57,
+          "rank": 59,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -5596,7 +5782,7 @@
         {
           "id": 12629,
           "name": "Pescosta Fabian",
-          "rank": 61,
+          "rank": 63,
           "score": 18,
           "total": 80,
           "boulders": {
@@ -5689,7 +5875,7 @@
         {
           "id": 4356,
           "name": "Tritscher Peter",
-          "rank": 62,
+          "rank": 64,
           "score": 16,
           "total": 80,
           "boulders": {
@@ -5782,7 +5968,7 @@
         {
           "id": 12679,
           "name": "Jon",
-          "rank": 63,
+          "rank": 65,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -5875,7 +6061,7 @@
         {
           "id": 12596,
           "name": "Rudigier Christian",
-          "rank": 64,
+          "rank": 66,
           "score": 13,
           "total": 80,
           "boulders": {
@@ -5968,7 +6154,7 @@
         {
           "id": 12550,
           "name": "König Werner",
-          "rank": 65,
+          "rank": 67,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -6061,7 +6247,7 @@
         {
           "id": 12597,
           "name": "Perre",
-          "rank": 65,
+          "rank": 67,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -6154,7 +6340,7 @@
         {
           "id": 12913,
           "name": "Felsenfest am Boden",
-          "rank": 65,
+          "rank": 67,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -6247,7 +6433,7 @@
         {
           "id": 12982,
           "name": "Übermut trotz Höhenangst",
-          "rank": 68,
+          "rank": 70,
           "score": 11,
           "total": 80,
           "boulders": {
@@ -6340,7 +6526,7 @@
         {
           "id": 12346,
           "name": "Velasco Cintrano Juan Manuel",
-          "rank": 68,
+          "rank": 70,
           "score": 11,
           "total": 80,
           "boulders": {
@@ -6433,7 +6619,7 @@
         {
           "id": 12627,
           "name": "Simml",
-          "rank": 70,
+          "rank": 72,
           "score": 10,
           "total": 80,
           "boulders": {
@@ -6526,7 +6712,7 @@
         {
           "id": 12233,
           "name": "Dolochow",
-          "rank": 71,
+          "rank": 73,
           "score": 9,
           "total": 80,
           "boulders": {
@@ -6619,7 +6805,7 @@
         {
           "id": 12489,
           "name": "Macho Alfa",
-          "rank": 72,
+          "rank": 74,
           "score": 7,
           "total": 80,
           "boulders": {
@@ -6712,7 +6898,7 @@
         {
           "id": 12990,
           "name": "Scheichl Lorenz",
-          "rank": 73,
+          "rank": 75,
           "score": 4,
           "total": 80,
           "boulders": {
@@ -6805,7 +6991,7 @@
         {
           "id": 12139,
           "name": "Eisstil",
-          "rank": 74,
+          "rank": 76,
           "score": 1,
           "total": 80,
           "boulders": {
@@ -6898,7 +7084,7 @@
         {
           "id": 1953,
           "name": "Helpferer Marco",
-          "rank": 74,
+          "rank": 76,
           "score": 1,
           "total": 80,
           "boulders": {
@@ -7742,7 +7928,7 @@
           "id": 9514,
           "name": "brunner larissa",
           "rank": 9,
-          "score": 46,
+          "score": 47,
           "total": 80,
           "boulders": {
             "Boulderbar Salzburg": [
@@ -7792,7 +7978,7 @@
               true,
               true,
               true,
-              false,
+              true,
               false,
               false,
               false,
@@ -7834,7 +8020,7 @@
         {
           "id": 2168,
           "name": "Ferner Pia",
-          "rank": 9,
+          "rank": 10,
           "score": 46,
           "total": 80,
           "boulders": {
@@ -7927,7 +8113,7 @@
         {
           "id": 5653,
           "name": "Monee",
-          "rank": 9,
+          "rank": 10,
           "score": 46,
           "total": 80,
           "boulders": {
@@ -9320,9 +9506,102 @@
           }
         },
         {
+          "id": 13030,
+          "name": "Eisl Anna-Maria",
+          "rank": 25,
+          "score": 27,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              true,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 12876,
           "name": "Lamprecht Lisa",
-          "rank": 26,
+          "rank": 27,
           "score": 25,
           "total": 80,
           "boulders": {
@@ -9413,9 +9692,102 @@
           }
         },
         {
+          "id": 10411,
+          "name": "Nikolova Yana",
+          "rank": 28,
+          "score": 24,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              true,
+              true,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 3342,
           "name": "Roitner Angelika",
-          "rank": 27,
+          "rank": 29,
           "score": 23,
           "total": 80,
           "boulders": {
@@ -9508,7 +9880,7 @@
         {
           "id": 9103,
           "name": "Schulze Wessel Véréna",
-          "rank": 28,
+          "rank": 30,
           "score": 22,
           "total": 80,
           "boulders": {
@@ -9601,7 +9973,7 @@
         {
           "id": 12289,
           "name": "Jujuei",
-          "rank": 29,
+          "rank": 31,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -9694,7 +10066,7 @@
         {
           "id": 12423,
           "name": "Menauer Ramona",
-          "rank": 29,
+          "rank": 31,
           "score": 20,
           "total": 80,
           "boulders": {
@@ -9787,7 +10159,7 @@
         {
           "id": 2076,
           "name": "Julia Klug",
-          "rank": 31,
+          "rank": 33,
           "score": 19,
           "total": 80,
           "boulders": {
@@ -9880,7 +10252,7 @@
         {
           "id": 12463,
           "name": "jasi",
-          "rank": 31,
+          "rank": 33,
           "score": 19,
           "total": 80,
           "boulders": {
@@ -9971,9 +10343,102 @@
           }
         },
         {
+          "id": 9956,
+          "name": "Pieper Frauke",
+          "rank": 35,
+          "score": 17,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              false,
+              false,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 12299,
           "name": "Nonni_98",
-          "rank": 33,
+          "rank": 35,
           "score": 17,
           "total": 80,
           "boulders": {
@@ -10066,7 +10531,7 @@
         {
           "id": 12753,
           "name": "lara_",
-          "rank": 34,
+          "rank": 37,
           "score": 15,
           "total": 80,
           "boulders": {
@@ -10159,7 +10624,7 @@
         {
           "id": 12601,
           "name": "Nic89",
-          "rank": 35,
+          "rank": 38,
           "score": 14,
           "total": 80,
           "boulders": {
@@ -10250,9 +10715,102 @@
           }
         },
         {
+          "id": 13025,
+          "name": "Drippindor",
+          "rank": 39,
+          "score": 12,
+          "total": 80,
+          "boulders": {
+            "Boulderbar Salzburg": [
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              false,
+              false,
+              false
+            ],
+            "Kletterhalle Slzbg": [
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              true,
+              true,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false
+            ]
+          }
+        },
+        {
           "id": 12739,
           "name": "Fuchslechner Eva",
-          "rank": 36,
+          "rank": 39,
           "score": 12,
           "total": 80,
           "boulders": {
@@ -10345,7 +10903,7 @@
         {
           "id": 9687,
           "name": "Carle Clem",
-          "rank": 37,
+          "rank": 41,
           "score": 10,
           "total": 80,
           "boulders": {
@@ -10438,7 +10996,7 @@
         {
           "id": 3807,
           "name": "Artner-Walkner Gabi",
-          "rank": 38,
+          "rank": 42,
           "score": 7,
           "total": 80,
           "boulders": {
@@ -10531,7 +11089,7 @@
         {
           "id": 12393,
           "name": "Leejang",
-          "rank": 39,
+          "rank": 43,
           "score": 6,
           "total": 80,
           "boulders": {
@@ -10624,7 +11182,7 @@
         {
           "id": 12482,
           "name": "Schlick Laura",
-          "rank": 39,
+          "rank": 43,
           "score": 6,
           "total": 80,
           "boulders": {
@@ -10717,7 +11275,7 @@
         {
           "id": 12813,
           "name": "Sommersprosse",
-          "rank": 41,
+          "rank": 45,
           "score": 4,
           "total": 80,
           "boulders": {
@@ -10810,7 +11368,7 @@
         {
           "id": 12168,
           "name": "Mestre Lourdes",
-          "rank": 42,
+          "rank": 46,
           "score": 2,
           "total": 80,
           "boulders": {
@@ -10903,7 +11461,7 @@
         {
           "id": 9373,
           "name": "Hauptmann Julia",
-          "rank": 43,
+          "rank": 47,
           "score": 1,
           "total": 80,
           "boulders": {
@@ -10996,7 +11554,7 @@
         {
           "id": 4025,
           "name": "Schütz Claudia",
-          "rank": 43,
+          "rank": 47,
           "score": 1,
           "total": 80,
           "boulders": {
