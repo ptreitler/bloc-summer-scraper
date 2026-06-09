@@ -2,7 +2,7 @@ name: Nightly Scrape
 
 on:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
   workflow_dispatch:
 
 jobs:
@@ -17,12 +17,14 @@ jobs:
           curl --retry 5 --retry-delay 15 --retry-all-errors -sf "$RENDER_URL/admin/ping"
           echo "Render is up."
 
-      - name: Trigger scrapes (fire-and-forget, run in background on Render)
+      - name: Trigger scrapes (staggered — 3 min apart so regions run sequentially)
         env:
           RENDER_URL: ${{ secrets.RENDER_URL }}
           SCRAPE_SECRET: ${{ secrets.SCRAPE_SECRET }}
         run: |
-          for REGION in "Graz" "Wien" "Kärnten" "Linz" "Murtal" "Salzburg" "Traunviertel"; do
+          REGIONS=("Graz" "Wien" "Kärnten" "Linz" "Murtal" "Salzburg" "Traunviertel")
+          for i in "${!REGIONS[@]}"; do
+            REGION="${REGIONS[$i]}"
             echo "Triggering scrape for $REGION..."
             curl --fail-with-body -X POST \
               -H "Authorization: Bearer $SCRAPE_SECRET" \
@@ -31,6 +33,11 @@ jobs:
               --max-time 30 \
               "$RENDER_URL/admin/scrape-region"
             echo ""
+            # Wait before triggering the next region so they don't scrape in parallel
+            if [ $i -lt $((${#REGIONS[@]} - 1)) ]; then
+              echo "Waiting 3 minutes before next region..."
+              sleep 180
+            fi
           done
 
       - name: Wait for background scrapes to complete

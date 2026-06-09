@@ -8,6 +8,7 @@ The site uses AJAX endpoints:
 
 import json
 import logging
+import random
 import re
 import time
 from datetime import datetime, timezone
@@ -46,14 +47,26 @@ CLASSES = [
 ]
 
 DATA_DIR = Path("data")
-RATE_LIMIT = 0.5  # seconds between requests
+RATE_LIMIT = 2.0      # base seconds between detail-page requests
+RATE_JITTER = 2.0     # additional random seconds (uniform 0–RATE_JITTER)
+INTER_CLASS_PAUSE = 5  # seconds between Männer and Frauen within a region
 
 console = Console()
 
 
 def _session() -> requests.Session:
     s = requests.Session()
-    s.headers["User-Agent"] = "bloc-summer-scraper/1.0 (educational, non-commercial)"
+    s.headers.update({
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:127.0) "
+            "Gecko/20100101 Firefox/127.0"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+    })
     return s
 
 
@@ -240,7 +253,10 @@ def scrape_all(region_name: str = "Graz", force: bool = False) -> Path:
         "classes": [],
     }
 
-    for cls in CLASSES:
+    for cls_idx, cls in enumerate(CLASSES):
+        if cls_idx > 0:
+            console.print(f"  [dim]Pausing {INTER_CLASS_PAUSE}s before next class...[/dim]")
+            time.sleep(INTER_CLASS_PAUSE)
         console.print(f"\n[bold]Fetching {cls['name']} ranking ({region_name})...[/bold]")
         ranking_html = fetch_ranking_html(session, cls, region)
         competitors = parse_ranking(ranking_html)
@@ -257,7 +273,8 @@ def scrape_all(region_name: str = "Graz", force: bool = False) -> Path:
                 f"Scraping {cls['name']} details", total=len(competitors)
             )
             for comp in competitors:
-                time.sleep(RATE_LIMIT)
+                delay = RATE_LIMIT + random.uniform(0, RATE_JITTER)
+                time.sleep(delay)
                 detail_resp = _request_with_retry(
                     lambda: session.get(
                         _detail_url(comp["id"], comp["class_k"], region["id"]), timeout=15
