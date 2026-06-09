@@ -7,6 +7,7 @@ The site uses AJAX endpoints:
 """
 
 import json
+import logging
 import re
 import time
 from datetime import datetime, timezone
@@ -56,6 +57,30 @@ def _session() -> requests.Session:
     return s
 
 
+def _request_with_retry(
+    fn,
+    *,
+    retries: int = 3,
+    backoff: float = 5.0,
+) -> requests.Response:
+    """Call fn() (a zero-arg callable that returns a Response), retrying on
+    connection/timeout errors with exponential backoff."""
+    last_exc: Exception | None = None
+    for attempt in range(1, retries + 1):
+        try:
+            resp = fn()
+            resp.raise_for_status()
+            return resp
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as exc:
+            last_exc = exc
+            wait = backoff * attempt
+            logging.warning("Request failed (attempt %d/%d): %s — retrying in %.0fs", attempt, retries, exc, wait)
+            time.sleep(wait)
+        except requests.exceptions.HTTPError:
+            raise
+    raise last_exc  # type: ignore[misc]
+
+
 def _detail_url(participant_id: int, class_k: int, region_id: int) -> str:
     return (
         f"{DETAIL_BASE}/"
@@ -65,28 +90,24 @@ def _detail_url(participant_id: int, class_k: int, region_id: int) -> str:
 
 def fetch_ranking_html(session: requests.Session, cls: dict, region: dict) -> str:
     """POST to the AJAX ranking endpoint and return the HTML body string."""
-    resp = session.post(
-        RANKING_API,
-        data={
-            "comp": COMP_SHORT,
-            "CID": COMP_C,
-            "VID": COMP_V,
-            "REid": region["id"],
-            "KLid": cls["id"],
-            "RankingTyp": RANKING_TYP,
-            "REBez": region["name"],
-            "KLBez": cls["bez"],
-            "GTyp": GRUPP_TYP,
-            "StartDate": START_DATE,
-            "EndDate": END_DATE,
-            "Backend": "0",
-            "HAID": "",
-            "AusgabeTyp": "1",
-            "KWID": "0",
-        },
-        timeout=15,
-    )
-    resp.raise_for_status()
+    payload = {
+        "comp": COMP_SHORT,
+        "CID": COMP_C,
+        "VID": COMP_V,
+        "REid": region["id"],
+        "KLid": cls["id"],
+        "RankingTyp": RANKING_TYP,
+        "REBez": region["name"],
+        "KLBez": cls["bez"],
+        "GTyp": GRUPP_TYP,
+        "StartDate": START_DATE,
+        "EndDate": END_DATE,
+        "Backend": "0",
+        "HAID": "",
+        "AusgabeTyp": "1",
+        "KWID": "0",
+    }
+    resp = _request_with_retry(lambda: session.post(RANKING_API, data=payload, timeout=15))
     return resp.json()["Return_DIV_Body"]
 
 
@@ -237,10 +258,11 @@ def scrape_all(region_name: str = "Graz", force: bool = False) -> Path:
             )
             for comp in competitors:
                 time.sleep(RATE_LIMIT)
-                detail_resp = session.get(
-                    _detail_url(comp["id"], comp["class_k"], region["id"]), timeout=15
+                detail_resp = _request_with_retry(
+                    lambda: session.get(
+                        _detail_url(comp["id"], comp["class_k"], region["id"]), timeout=15
+                    )
                 )
-                detail_resp.raise_for_status()
                 comp["boulders"] = parse_detail(detail_resp.text)
                 if not comp["boulders"]:
                     console.print(
