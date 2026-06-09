@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from flask import Blueprint, Response, redirect, request, session, url_for
 
-from web.auth import check_credentials, require_login
+from web.auth import check_credentials
 from web.nav import inject_nav
 
 bp = Blueprint("index", __name__)
@@ -12,7 +12,6 @@ DEFAULT_REGION = "Graz"
 
 
 @bp.route("/")
-@require_login
 def index():
     region = request.args.get("region", DEFAULT_REGION)
     from analyze import leaderboard_summary, load_data, participant_summary

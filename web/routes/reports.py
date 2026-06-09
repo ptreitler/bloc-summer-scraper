@@ -6,7 +6,6 @@ from pathlib import Path
 
 from flask import Blueprint, Response, request
 
-from web.auth import require_login
 from web.nav import inject_nav
 
 bp = Blueprint("reports", __name__)
@@ -33,7 +32,6 @@ def _no_data(region: str, status: int = 503) -> Response:
 
 
 @bp.route("/leaderboard")
-@require_login
 def leaderboard():
     region = request.args.get("region", "Graz")
     limit = request.args.get("limit", type=int)
@@ -49,7 +47,6 @@ def leaderboard():
 
 
 @bp.route("/score")
-@require_login
 def score():
     region = request.args.get("region", "Graz")
     name = request.args.get("name", "")
@@ -74,7 +71,6 @@ def score():
 
 
 @bp.route("/recommend")
-@require_login
 def recommend():
     region = request.args.get("region", "Graz")
     name = request.args.get("name", "")
@@ -99,7 +95,6 @@ def recommend():
 
 
 @bp.route("/compare")
-@require_login
 def compare():
     region = request.args.get("region", "Graz")
     name_a = request.args.get("a", "")
@@ -125,7 +120,6 @@ def compare():
 
 
 @bp.route("/stats")
-@require_login
 def stats():
     region = request.args.get("region", "Graz")
     class_filter = request.args.get("class", "all")
@@ -141,7 +135,6 @@ def stats():
 
 
 @bp.route("/find")
-@require_login
 def find():
     region = request.args.get("region", "Graz")
     query = request.args.get("q", "")

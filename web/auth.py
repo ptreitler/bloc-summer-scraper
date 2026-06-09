@@ -14,10 +14,6 @@ def _users() -> dict[str, dict]:
             "password": os.environ.get("ADMIN_PASSWORD", ""),
             "is_admin": True,
         },
-        os.environ.get("GUEST_USERNAME", "guest"): {
-            "password": os.environ.get("GUEST_PASSWORD", ""),
-            "is_admin": False,
-        },
     }
 
 

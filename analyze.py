@@ -306,11 +306,9 @@ def leaderboard_summary(data: dict, top_n: int | None = None) -> dict:
                     "avg_topped": round(sum(visited) / len(visited), 1),
                     "avg_topped_pct": round(sum(visited) / len(visited) / n_boulders * 100, 1),
                 })
-    diff_df = (
-        pd.DataFrame(diff_rows)
-        .sort_values(["class", "avg_topped_pct"])
-        .reset_index(drop=True)
-    )
+    diff_df = pd.DataFrame(diff_rows)
+    if not diff_df.empty:
+        diff_df = diff_df.sort_values(["class", "avg_topped_pct"]).reset_index(drop=True)
 
     return {
         "region": data.get("region", ""),
